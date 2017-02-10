@@ -19,7 +19,7 @@ import { NgModule, ModuleWithProviders } from '@angular/core';
 import { HttpModule, Http } from '@angular/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TranslateModule, TranslateLoader } from 'ng2-translate/ng2-translate';
+import { TranslateModule, TranslateLoader } from 'ng2-translate';
 import { MaterialModule } from '@angular/material';
 
 import {

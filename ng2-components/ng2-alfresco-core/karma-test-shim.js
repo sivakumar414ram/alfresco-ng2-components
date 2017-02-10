@@ -60,7 +60,7 @@ var map = {
 
     // other libraries
     'rxjs': 'npm:rxjs',
-    'ng2-translate': 'npm:ng2-translate',
+    'ng2-translate': 'npm:ng2-translate/bundles',
 
     'alfresco-js-api': 'npm:alfresco-js-api/dist'
 };
@@ -68,7 +68,7 @@ var map = {
 var packages = {
     'app': { main: 'main.js',  defaultExtension: 'js' },
     'rxjs': {  defaultExtension: 'js' },
-    'ng2-translate': { defaultExtension: 'js' },
+    'ng2-translate': { main: 'index.js', defaultExtension: 'js' },
 
     'alfresco-js-api': { main: './alfresco-js-api.js', defaultExtension: 'js'}
 };

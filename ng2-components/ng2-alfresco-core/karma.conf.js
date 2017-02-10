@@ -33,8 +33,7 @@ module.exports = function (config) {
       {pattern: 'node_modules/@angular/**/*.js.map', included: false, watched: false},
 
       'node_modules/alfresco-js-api/dist/alfresco-js-api.js',
-      {pattern: 'node_modules/ng2-translate/**/*.js', included: false, watched: false},
-      {pattern: 'node_modules/ng2-translate/**/*.js.map', included: false, watched: false},
+      {pattern: 'node_modules/ng2-translate/bundles/**/*.js', included: false, watched: false},
 
       'karma-test-shim.js',
 

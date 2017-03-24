@@ -56,9 +56,8 @@ after_success:
   bash <(curl -s https://codecov.io/bash) -X gcov
 
 cache:
+  yarn: true
   directories:
-  - ./node_modules/material-design-lite
-  - ./node_modules/material-design-icons
   - demo-shell-ng2/node_modules
   - ng2-components/ng2-activiti-form/node_modules
   - ng2-components/ng2-activiti-processlist/node_modules

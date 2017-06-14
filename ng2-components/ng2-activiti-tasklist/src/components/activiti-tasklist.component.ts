@@ -71,6 +71,9 @@ export class ActivitiTaskList implements OnChanges, AfterContentInit {
     @Input()
     data: DataTableAdapter;
 
+    @Input()
+    dataSchema: DataColumn[];
+
     @Output()
     rowClick: EventEmitter<string> = new EventEmitter<string>();
 
@@ -121,7 +124,7 @@ export class ActivitiTaskList implements OnChanges, AfterContentInit {
         }
 
         if (!this.data) {
-            this.data = new ObjectDataTableAdapter([], schema.length > 0 ? schema : this.defaultSchemaColumn);
+            this.data = new ObjectDataTableAdapter([], schema.length > 0 ? schema : (this.dataSchema.length > 0 ? this.dataSchema : this.defaultSchemaColumn));
         } else {
             if (schema && schema.length > 0) {
                 this.data.setColumns(schema);

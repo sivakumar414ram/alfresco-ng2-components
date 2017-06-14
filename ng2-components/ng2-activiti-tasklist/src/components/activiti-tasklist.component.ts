@@ -217,6 +217,7 @@ export class ActivitiTaskList implements OnChanges, AfterContentInit {
      */
     private renderInstances(instances: any[]) {
         instances = this.optimizeNames(instances);
+        this.data = new ObjectDataTableAdapter(instances, this.data.getColumns());
         this.data.setRows(instances);
     }
 

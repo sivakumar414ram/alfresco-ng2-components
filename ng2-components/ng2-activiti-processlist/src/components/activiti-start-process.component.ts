@@ -43,6 +43,9 @@ export class ActivitiStartProcessInstanceComponent implements OnChanges {
     start: EventEmitter<ProcessInstance> = new EventEmitter<ProcessInstance>();
 
     @Output()
+    cancel: EventEmitter<ProcessInstance> = new EventEmitter<ProcessInstance>();
+
+    @Output()
     error: EventEmitter<ProcessInstance> = new EventEmitter<ProcessInstance>();
 
     @ViewChild(ActivitiStartFormComponent)
@@ -98,6 +101,10 @@ export class ActivitiStartProcessInstanceComponent implements OnChanges {
                 }
             );
         }
+    }
+
+    public cancelStartProcess() {
+        this.cancel.emit();
     }
 
     onProcessDefChange(processDefinitionId) {

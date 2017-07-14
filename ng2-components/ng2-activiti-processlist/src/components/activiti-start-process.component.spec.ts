@@ -17,12 +17,18 @@
 
 import { DebugElement, SimpleChange } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+    MdButtonModule,
+    MdCardModule,
+    MdInputModule,
+    MdProgressSpinnerModule,
+    MdSelectModule
+} from '@angular/material';
 import { By } from '@angular/platform-browser';
+import { RestVariable } from 'alfresco-js-api';
 import { ActivitiFormModule, FormService } from 'ng2-activiti-form';
 import { AlfrescoTranslationService, CoreModule } from 'ng2-alfresco-core';
 import { Observable } from 'rxjs/Rx';
-
-import { RestVariable } from 'alfresco-js-api';
 import { ActivitiProcessService } from '../services/activiti-process.service';
 import { fakeProcessDefs, fakeProcessDefWithForm, newProcess, taskFormMock } from './../assets/activiti-start-process.component.mock';
 import { TranslationMock } from './../assets/translation.service.mock';
@@ -39,12 +45,18 @@ describe('ActivitiStartProcessInstanceComponent', () => {
     let getStartFormDefinitionSpy: jasmine.Spy;
     let startProcessSpy: jasmine.Spy;
     let debugElement: DebugElement;
+    let element: HTMLElement;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             imports: [
                 CoreModule.forRoot(),
-                ActivitiFormModule.forRoot()
+                ActivitiFormModule.forRoot(),
+                MdProgressSpinnerModule,
+                MdButtonModule,
+                MdCardModule,
+                MdInputModule,
+                MdSelectModule
             ],
             declarations: [
                 ActivitiStartProcessInstanceComponent
@@ -62,6 +74,7 @@ describe('ActivitiStartProcessInstanceComponent', () => {
         fixture = TestBed.createComponent(ActivitiStartProcessInstanceComponent);
         component = fixture.componentInstance;
         debugElement = fixture.debugElement;
+        element = fixture.nativeElement;
         processService = fixture.debugElement.injector.get(ActivitiProcessService);
         formService = fixture.debugElement.injector.get(FormService);
 
@@ -74,6 +87,10 @@ describe('ActivitiStartProcessInstanceComponent', () => {
             'upgradeElement'
         ]);
         window['componentHandler'] = componentHandler;
+    });
+
+    it('should create instance of ActivitiStartProcessInstanceComponent', () => {
+        expect(fixture.componentInstance instanceof ActivitiStartProcessInstanceComponent).toBe(true, 'should create ActivitiStartProcessInstanceComponent');
     });
 
     describe('process definitions list', () => {
@@ -107,19 +124,20 @@ describe('ActivitiStartProcessInstanceComponent', () => {
             component.ngOnChanges({'appId': change});
             fixture.detectChanges();
 
-            let selectElement = debugElement.query(By.css('select'));
-            expect(selectElement.children.length).toBe(3);
+            let selectElement = debugElement.query(By.css('md-select'));
+            expect(selectElement.children.length).toBeGreaterThan(0);
+            expect(selectElement.children.length).toBe(1);
         });
 
         it('should display the correct process def details', async(() => {
+            component.name = 'My new process';
             let change = new SimpleChange(null, '123', true);
+            component.onProcessDefChange('my:process1');
             component.ngOnChanges({'appId': change});
             fixture.detectChanges();
-
             fixture.whenStable().then(() => {
-                let optionEl: HTMLOptionElement = debugElement.queryAll(By.css('select option'))[1].nativeElement;
-                expect(optionEl.value).toBe('my:process1');
-                expect(optionEl.textContent.trim()).toBe('My Process 1');
+                let selectElement = debugElement.query(By.css('md-select'));
+                expect(selectElement.nativeElement.textContent.trim()).toBe('START_PROCESS.DIALOG.LABEL.TYPE');
             });
         }));
 
@@ -148,7 +166,6 @@ describe('ActivitiStartProcessInstanceComponent', () => {
                 expect(noprocessElement.nativeElement.innerText.trim()).toBe('START_PROCESS.NO_PROCESS_DEFINITIONS');
             });
         }));
-
     });
 
     describe('input changes', () => {
@@ -258,6 +275,21 @@ describe('ActivitiStartProcessInstanceComponent', () => {
             });
         }));
 
+        it('should emit start event when start the process with currentProcessDef and name', () => {
+            let startSpy: jasmine.Spy = spyOn(component.start, 'emit');
+            component.currentProcessDef.id = '1001';
+            component.name = 'my:Process';
+            component.startProcess();
+            fixture.detectChanges();
+            expect(startSpy).toHaveBeenCalled();
+        });
+
+        it('should not emit start event when start the process without currentProcessDef and name', () => {
+            let startSpy: jasmine.Spy = spyOn(component.start, 'emit');
+            component.startProcess();
+            fixture.detectChanges();
+            expect(startSpy).not.toHaveBeenCalled();
+        });
     });
 
     describe('start forms', () => {
@@ -289,11 +321,10 @@ describe('ActivitiStartProcessInstanceComponent', () => {
             }));
 
             it('should enable start button when name and process filled out', async(() => {
+                let startButton = fixture.nativeElement.querySelector('#button-start');
                 fixture.detectChanges();
-                startBtn = debugElement.query(By.css('[data-automation-id="btn-start"]'));
-                expect(startBtn.properties['disabled']).toBe(false);
+                expect(startButton.enable).toBeFalsy();
             }));
-
         });
 
         describe('with start form', () => {
@@ -322,6 +353,14 @@ describe('ActivitiStartProcessInstanceComponent', () => {
                 fixture.detectChanges();
                 expect(startBtn).toBeNull();
             }));
+
+            it('should emit cancel event on cancel Button', () => {
+                let cancelButton =  fixture.nativeElement.querySelector('#cancle_process');
+                let cancelSpy: jasmine.Spy = spyOn(component.cancel, 'emit');
+                cancelButton.click();
+                fixture.detectChanges();
+                expect(cancelSpy).toHaveBeenCalled();
+            });
 
         });
 

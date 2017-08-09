@@ -11,3 +11,7 @@ adf-datatable >>> .data-cell {
     margin-left: calc((100% - 100px) / 2);
     margin-right: calc((100% - 100px) / 2);
 }
+
+.empty-list {
+    text-align: center;
+}

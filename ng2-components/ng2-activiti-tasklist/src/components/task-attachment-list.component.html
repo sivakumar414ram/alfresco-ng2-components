@@ -1,4 +1,4 @@
-<adf-datatable
+<adf-datatable *ngIf="isTaskCompleted()"
     [rows]="attachments"
     [actions]="true"
     [loading]="isLoading"
@@ -22,3 +22,5 @@
         </ng-template>
     </loading-content-template>
 </adf-datatable>
+
+<h4 *ngIf="hasAttachmentsForCompletedTask()" class="empty-list">{{ 'ATTACHMENTS.EMPTY_LIST' | translate }}</h4>

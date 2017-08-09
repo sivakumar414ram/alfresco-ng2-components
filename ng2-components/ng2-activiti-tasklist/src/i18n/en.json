@@ -94,5 +94,9 @@
         "SEARCH": {
             "NO_USERS": "No user found to involve"
         }
+    },
+    "ATTACHMENTS" : {
+        "EMPTY_LIST": "No Documents are vailable"
     }
+
 }

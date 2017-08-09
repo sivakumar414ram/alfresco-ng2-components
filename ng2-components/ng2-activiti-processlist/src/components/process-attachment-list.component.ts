@@ -38,6 +38,11 @@ export class ProcessAttachmentListComponent implements OnChanges {
     @Output()
     error: EventEmitter<any> = new EventEmitter<any>();
 
+    @Input()
+    isReadOnly: boolean;
+
+    emptyListMsg: string = 'No Documents are Available';
+
     attachments: any[] = [];
     isLoading: boolean = true;
 
@@ -119,26 +124,46 @@ export class ProcessAttachmentListComponent implements OnChanges {
     }
 
     onShowRowActionsMenu(event: any) {
-        let viewAction = {
-            title: 'View',
-            name: 'view'
-        };
+        let viewAction;
+        let removeAction;
+        let downloadAction;
 
-        let removeAction = {
-            title: 'Remove',
-            name: 'remove'
-        };
+        if(!this.isReadOnly) {
+            viewAction = {
+                title: 'View',
+                name: 'view'
+            };
 
-        let downloadAction = {
-            title: 'Download',
-            name: 'download'
-        };
+            removeAction = {
+                title: 'Remove',
+                name: 'remove'
+            };
 
-        event.value.actions = [
-            viewAction,
-            removeAction,
-            downloadAction
-        ];
+            downloadAction = {
+                title: 'Download',
+                name: 'download'
+            };
+
+            event.value.actions = [
+                viewAction,
+                removeAction,
+                downloadAction
+            ];
+        } else {
+            viewAction = {
+                title: 'View',
+                name: 'view'
+            };
+
+            downloadAction = {
+                title: 'Download',
+                name: 'download'
+            };
+            event.value.actions = [
+                viewAction,
+                downloadAction
+            ];
+        }
     }
 
     onExecuteRowAction(event: any) {
@@ -177,5 +202,18 @@ export class ProcessAttachmentListComponent implements OnChanges {
                 this.error.emit(err);
             }
         );
+    }
+
+    isProcessCompleted(): boolean {
+        if(this.isReadOnly) {
+            return !(this.attachments.length === 0) && this.isReadOnly;
+        } else {
+            return this.attachments.length === 0 || !this.isReadOnly;
+        }
+    }
+
+
+    hasAttachmentsForCompletedProcess(): boolean {
+        return this.attachments.length === 0 && this.isReadOnly;
     }
 }

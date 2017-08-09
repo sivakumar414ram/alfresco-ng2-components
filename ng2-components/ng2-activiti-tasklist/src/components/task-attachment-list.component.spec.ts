@@ -164,6 +164,33 @@ describe('TaskAttachmentList', () => {
         });
     }));
 
+    it('should display all actions if attachements are not read only', async(() => {
+        let change = new SimpleChange(null, '123', true);
+        component.ngOnChanges({'taskId': change});
+
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            let actionMenu = fixture.debugElement.nativeElement.querySelector('adf-datatable tbody tr:first-child td:last-child button');
+            actionMenu.click();
+            let actionMenuList = fixture.debugElement.nativeElement.querySelector('button.mat-menu-item');
+            expect(actionMenuList.length).toBe(3);
+        });
+    }));
+
+    it('should not display remove action if attachments are read only', async(() => {
+        let change = new SimpleChange(null, '123', true);
+        component.ngOnChanges({'taskId': change});
+        component.readOnly = true;
+
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            let actionMenu = fixture.debugElement.nativeElement.querySelector('adf-datatable tbody tr:first-child td:last-child button');
+            actionMenu.click();
+            let actionMenuList = fixture.debugElement.nativeElement.querySelector('button.mat-menu-item');
+            expect(actionMenuList.length).toBe(2);
+        });
+    }));
+
     it('should show the empty list component when the attachments list is empty', async(() => {
         getTaskRelatedContentSpy.and.returnValue(Observable.of({
             'size': 0,
@@ -177,6 +204,23 @@ describe('TaskAttachmentList', () => {
         fixture.whenStable().then(() => {
             fixture.detectChanges();
             expect(fixture.nativeElement.querySelector('adf-empty-list .empty-list__this-space-is-empty').innerHTML).toEqual('ADF-DATATABLE.EMPTY.HEADER');
+        });
+    }));
+
+    it('should show the message if attachment list is empty for complteted task', async(() => {
+        getTaskRelatedContentSpy.and.returnValue(Observable.of({
+            'size': 0,
+            'total': 0,
+            'start': 0,
+            'data': []
+        }));
+        let change = new SimpleChange(null, '123', true);
+        component.ngOnChanges({'taskId': change});
+        component.readOnly = true;
+
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            expect(fixture.nativeElement.querySelector('#empty-attachment-list-id').innerHTML).toEqual('ATTACHMENTS.EMPTY_LIST');
         });
     }));
 

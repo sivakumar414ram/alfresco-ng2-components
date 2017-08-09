@@ -31,6 +31,7 @@ import { ProcessAttachmentListComponent } from './process-attachment-list.compon
 describe('ProcessAttachmentListComponent', () => {
 
     let componentHandler: any;
+    // let element: HTMLElement;
     let service: ActivitiContentService;
     let component: ProcessAttachmentListComponent;
     let fixture: ComponentFixture<ProcessAttachmentListComponent>;
@@ -57,7 +58,7 @@ describe('ProcessAttachmentListComponent', () => {
     }));
 
     beforeEach(() => {
-
+        // element = fixture.nativeElement;
         fixture = TestBed.createComponent(ProcessAttachmentListComponent);
         component = fixture.componentInstance;
         service = fixture.debugElement.injector.get(ActivitiContentService);
@@ -168,6 +169,31 @@ describe('ProcessAttachmentListComponent', () => {
         });
     }));
 
+    it('should display all actions if attachements are not read only', async(() => {
+        let change = new SimpleChange(null, '123', true);
+        component.ngOnChanges({ 'processInstanceId': change });
+
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            let actionMenu = fixture.debugElement.nativeElement.querySelector('adf-datatable tbody tr:first-child td:last-child button');
+            actionMenu.click();
+            expect(fixture.debugElement.queryAll(By.css('button.mat-menu-item')).length).toBe(3);
+        });
+    }));
+
+    it('should not display remove action if attachments are read only', async(() => {
+        let change = new SimpleChange(null, '123', true);
+        component.ngOnChanges({ 'processInstanceId': change });
+        component.readOnly = true;
+
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            let actionMenu = fixture.debugElement.nativeElement.querySelector('adf-datatable tbody tr:first-child td:last-child button');
+            actionMenu.click();
+            expect(fixture.debugElement.queryAll(By.css('button.mat-menu-item')).length).toBe(2);
+        });
+    }));
+
     it('should show the empty list component when the attachments list is empty', async(() => {
         getProcessRelatedContentSpy.and.returnValue(Observable.of({
             'size': 0,
@@ -179,7 +205,24 @@ describe('ProcessAttachmentListComponent', () => {
         component.ngOnChanges({'processInstanceId': change});
         fixture.whenStable().then(() => {
             fixture.detectChanges();
+            debugger;
             expect(fixture.nativeElement.querySelector('adf-empty-list .empty-list__this-space-is-empty').innerHTML).toEqual('ADF-DATATABLE.EMPTY.HEADER');
+        });
+    }));
+
+    it('should show the message if attachment list is empty for complteted process', async(() => {
+        getProcessRelatedContentSpy.and.returnValue(Observable.of({
+            'size': 0,
+            'total': 0,
+            'start': 0,
+            'data': []
+        }));
+        let change = new SimpleChange(null, '123', true);
+        component.ngOnChanges({'processInstanceId': change});
+        component.readOnly = true;
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            expect(fixture.nativeElement.querySelector('#empty-attachment-list-id').innerHTML).toEqual('ATTACHMENTS.EMPTY_LIST');
         });
     }));
 

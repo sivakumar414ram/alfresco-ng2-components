@@ -39,7 +39,7 @@ export class ProcessAttachmentListComponent implements OnChanges {
     error: EventEmitter<any> = new EventEmitter<any>();
 
     @Input()
-    isReadOnly: boolean;
+    readOnly: boolean;
 
     emptyListMsg: string = 'No Documents are Available';
 
@@ -124,45 +124,28 @@ export class ProcessAttachmentListComponent implements OnChanges {
     }
 
     onShowRowActionsMenu(event: any) {
-        let viewAction;
-        let removeAction;
-        let downloadAction;
+        let viewAction = {
+            title: 'View',
+            name: 'view'
+        };
 
-        if(!this.isReadOnly) {
-            viewAction = {
-                title: 'View',
-                name: 'view'
-            };
+        let removeAction = {
+            title: 'Remove',
+            name: 'remove'
+        };
 
-            removeAction = {
-                title: 'Remove',
-                name: 'remove'
-            };
+        let downloadAction = {
+            title: 'Download',
+            name: 'download'
+        };
 
-            downloadAction = {
-                title: 'Download',
-                name: 'download'
-            };
+        event.value.actions = [
+            viewAction,
+            downloadAction
+        ];
 
-            event.value.actions = [
-                viewAction,
-                removeAction,
-                downloadAction
-            ];
-        } else {
-            viewAction = {
-                title: 'View',
-                name: 'view'
-            };
-
-            downloadAction = {
-                title: 'Download',
-                name: 'download'
-            };
-            event.value.actions = [
-                viewAction,
-                downloadAction
-            ];
+        if (!this.readOnly) {
+            event.value.actions.splice(1, 0, removeAction);
         }
     }
 
@@ -204,16 +187,7 @@ export class ProcessAttachmentListComponent implements OnChanges {
         );
     }
 
-    isProcessCompleted(): boolean {
-        if(this.isReadOnly) {
-            return !(this.attachments.length === 0) && this.isReadOnly;
-        } else {
-            return this.attachments.length === 0 || !this.isReadOnly;
-        }
-    }
-
-
-    hasAttachmentsForCompletedProcess(): boolean {
-        return this.attachments.length === 0 && this.isReadOnly;
+    isAttachmentListVisible() {
+        return !this.readOnly || this.attachments.length > 0;
     }
 }

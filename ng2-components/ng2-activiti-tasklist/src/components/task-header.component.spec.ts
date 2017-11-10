@@ -18,8 +18,7 @@
 import { DebugElement } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { AppConfigService, CardViewUpdateService, CoreModule, TranslationService, UserProcessModel } from 'ng2-alfresco-core';
-import { BpmUserService } from 'ng2-alfresco-userinfo';
+import { AppConfigService, AuthenticationService, CardViewUpdateService, CoreModule, TranslationService, UserProcessModel } from 'ng2-alfresco-core';
 import { Observable } from 'rxjs/Rx';
 import { AppConfigServiceMock } from '../assets/app-config.service.mock';
 import { TranslationMock } from '../assets/translation.service.mock';
@@ -39,10 +38,10 @@ import { TaskHeaderComponent } from './task-header.component';
 describe('TaskHeaderComponent', () => {
 
     let service: TaskListService;
+    let authService: AuthenticationService;
     let component: TaskHeaderComponent;
     let fixture: ComponentFixture<TaskHeaderComponent>;
     let debugElement: DebugElement;
-    let userBpmService: BpmUserService;
     let getCurrentUserInfoSpy: jasmine.Spy;
 
     let fakeBpmAssignedUser = {
@@ -69,7 +68,7 @@ describe('TaskHeaderComponent', () => {
             ],
             providers: [
                 TaskListService,
-                BpmUserService,
+                AuthenticationService,
                 CardViewUpdateService,
                 { provide: AppConfigService, useClass: AppConfigServiceMock },
                 { provide: TranslationService, useClass: TranslationMock }
@@ -81,9 +80,9 @@ describe('TaskHeaderComponent', () => {
         fixture = TestBed.createComponent(TaskHeaderComponent);
         component = fixture.componentInstance;
         service = TestBed.get(TaskListService);
-        userBpmService = TestBed.get(BpmUserService);
+        authService = TestBed.get(AuthenticationService);
         debugElement = fixture.debugElement;
-        getCurrentUserInfoSpy = spyOn(userBpmService, 'getCurrentUserInfo').and.returnValue(Observable.of(fakeBpmAssignedUser));
+        getCurrentUserInfoSpy = spyOn(authService, 'getCurrentUserInfo').and.returnValue(Observable.of(fakeBpmAssignedUser));
         component.taskDetails = new TaskDetailsModel(taskDetailsMock);
     });
 

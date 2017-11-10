@@ -229,6 +229,19 @@ export class AuthenticationService {
         return this.alfrescoApi.getInstance().bpmAuth.username;
     }
 
+    /**
+     * Get the BPM username
+     *
+     * @returns {User} the User Info
+     *
+     * @memberof AuthenticationService
+     */
+    getCurrentUserInfo(): Observable<any> {
+        return Observable.fromPromise(this.alfrescoApi.getInstance().activiti.profileApi.getProfile())
+            .map((data) => data)
+            .catch(err => this.handleError(err));
+    }
+
     setRedirectUrl(url: string) {
         this.redirectUrl = url;
     }

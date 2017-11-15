@@ -112,4 +112,12 @@ export class UserInfoComponent implements OnInit {
     showOnRight() {
         return this.namePosition === 'right';
     }
+
+    hasBpmUserPictureId(): boolean {
+        return !!this.bpmUser.pictureId;
+    }
+
+    hasEcmUserAvatarId(): boolean {
+        return !!this.ecmUser.avatarId;
+    }
 }

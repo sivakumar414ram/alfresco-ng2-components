@@ -21,11 +21,13 @@ import {
     AlfrescoAuthenticationService,
     AlfrescoContentService,
     AlfrescoTranslationService,
-    CoreModule
+    CoreModule,
+    InitialUsernamePipe
 } from 'ng2-alfresco-core';
 import { fakeBpmUser } from '../assets/fake-bpm-user.service.mock';
 import { fakeEcmEditedUser, fakeEcmUser, fakeEcmUserNoImage } from '../assets/fake-ecm-user.service.mock';
 import { TranslationMock } from '../assets/translation.service.mock';
+import { FakeSanitazer } from '../assets/userInitial-pipe-mock';
 import { MaterialModule } from '../material.module';
 import { BpmUserService } from '../services/bpm-user.service';
 import { EcmUserService } from '../services/ecm-user.service';
@@ -197,6 +199,20 @@ describe('User info component', () => {
                 });
             }));
 
+            it('should display the current user image if user has avatarId', async(() => {
+                fixture.whenStable().then(() => {
+                    fixture.detectChanges();
+                    let imageButton: HTMLButtonElement = <HTMLButtonElement> element.querySelector('#logged-user-img');
+                    imageButton.click();
+                    fixture.detectChanges();
+                    let loggedImage = fixture.debugElement.query(By.css('#logged-user-img'));
+                    expect(userInfoComp.ecmUser.avatarId).toBe('fake-avatar-id');
+                    expect(element.querySelector('#userinfo_container')).not.toBeNull();
+                    expect(loggedImage).not.toBeNull();
+                    expect(loggedImage.properties.src).toContain('assets/images/ecmImg.gif');
+                });
+            }));
+
             it('should get the ecm user informations from the service', () => {
                 fixture.whenStable().then(() => {
                     fixture.detectChanges();
@@ -247,8 +263,21 @@ describe('User info component', () => {
                 let tabHeader = fixture.debugElement.query(By.css('#tab-group-env'));
                 expect(tabHeader.classes['adf-hide-tab']).toBeTruthy();
             });
-        });
 
+            it('should display the current user Initials if the user dose not have avatarId', async(() => {
+                fixture.whenStable().then(() => {
+                    fixture.detectChanges();
+                    let pipe = new InitialUsernamePipe(new FakeSanitazer());
+                    expect(userInfoComp.ecmUser.avatarId).toBeNull();
+                    expect(pipe.transform({
+                        id: 13,
+                        firstName: 'Wilbur',
+                        lastName: 'Adams',
+                        email: 'wilbur@app.com'
+                    })).toBe('<div id="user-initials-image" class="">WA</div>');
+                });
+            }));
+        });
     });
 
     describe('when user is logged on bpm', () => {

@@ -344,8 +344,7 @@ export class TaskListComponent implements OnChanges, OnInit, AfterContentInit {
 
     getSchema(): any {
         let customSchemaColumns = [];
-        customSchemaColumns = _.concat(customSchemaColumns, this.getSchemaFromConfig(this.presetColumn));
-        customSchemaColumns = _.concat(customSchemaColumns, this.getSchemaFromHtml());
+        customSchemaColumns = this.getSchemaFromConfig(this.presetColumn).concat(this.getSchemaFromHtml());
         if (customSchemaColumns.length === 0) {
             customSchemaColumns = this.getDefaultLayoutPreset();
         }

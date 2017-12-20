@@ -19,7 +19,6 @@ import { DataColumn, DataRowEvent, DataTableAdapter, ObjectDataColumn, ObjectDat
 import { AppConfigService, DataColumnListComponent } from '@alfresco/adf-core';
 import { AfterContentInit, Component, ContentChild, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import * as _ from 'lodash';
 import { TaskQueryRequestRepresentationModel } from '../models/filter.model';
 import { TaskListModel } from '../models/task-list.model';
 import { taskPresetsDefaultModel } from '../models/task-preset.model';

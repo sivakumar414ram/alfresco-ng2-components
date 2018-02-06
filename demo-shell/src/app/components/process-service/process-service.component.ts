@@ -19,6 +19,7 @@
 import {
     AfterViewInit,
     Component,
+    ChangeDetectionStrategy,
     ElementRef,
     Input,
     OnDestroy,
@@ -30,7 +31,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Pagination, ProcessInstanceFilterRepresentation } from 'alfresco-js-api';
 import {
     FORM_FIELD_VALIDATORS, FormEvent, FormFieldEvent, FormRenderingService, FormService,
-    DynamicTableRow, ValidateDynamicTableRowEvent, AppConfigService, PaginationComponent
+    DynamicTableRow, ValidateDynamicTableRowEvent, AppConfigService
 } from '@alfresco/adf-core';
 
 import { AnalyticsReportListComponent } from '@alfresco/adf-insights';
@@ -69,15 +70,13 @@ const currentTaskIdNew = '__NEW__';
     selector: 'app-process-service',
     templateUrl: './process-service.component.html',
     styleUrls: ['./process-service.component.scss'],
-    encapsulation: ViewEncapsulation.None
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit {
 
     @ViewChild(TaskFiltersComponent)
     activitifilter: TaskFiltersComponent;
-
-    @ViewChild(PaginationComponent)
-    processListPagination: PaginationComponent;
 
     @ViewChild(TaskListComponent)
     taskList: TaskListComponent;
@@ -121,6 +120,13 @@ export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit
         maxItems: 10,
         totalItems: 0
     };
+
+    processPagination: Pagination = {
+        skipCount: 0,
+        maxItems: 10,
+        totalItems: 0
+    };
+
     taskPage = 0;
     processPage = 0;
     paginationPageSize = 0;
@@ -164,7 +170,7 @@ export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit
         this.dataTasks.setSorting(new DataSorting('created', 'desc'));
         this.supportedPages = this.preferenceService.getDifferentPageSizes();
         this.taskPagination.maxItems = this.preferenceService.paginationSize;
-        this.paginationPageSize = this.preferenceService.paginationSize;
+        this.processPagination.maxItems = this.preferenceService.paginationSize;
 
         this.defaultProcessName = this.appConfig.get<string>('adf-start-process.name');
         this.defaultProcessDefinitionName = this.appConfig.get<string>('adf-start-process.processDefinitionName');
@@ -209,7 +215,8 @@ export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit
     }
 
     onPrevPageProcess(pagination: Pagination): void {
-        this.processPage = this.processListPagination.current - 1;
+        this.processPagination.skipCount = pagination.skipCount;
+        this.processPage--;
     }
 
     onNextPage(pagination: Pagination): void {
@@ -218,14 +225,16 @@ export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit
     }
 
     onNextPageProcess(pagination: Pagination): void {
-        this.processPage = this.processListPagination.current - 1;
+        this.processPagination.skipCount = pagination.skipCount;
+        this.processPage++;
     }
 
     onChangePageSizeProcess(pagination: Pagination): void {
-        const { maxItems } = pagination;
+        const { skipCount, maxItems } = pagination;
+        this.processPage = this.currentPage(skipCount, maxItems);
+        this.processPagination.maxItems = maxItems;
+        this.processPagination.skipCount = skipCount;
         this.preferenceService.paginationSize = maxItems;
-        this.processPage = this.processListPagination.current - 1;
-        this.paginationPageSize = maxItems;
     }
 
     onChangePageSize(pagination: Pagination): void {
@@ -244,7 +253,10 @@ export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit
     }
 
     onChangePageNumberProcess(pagination: Pagination): void {
-        this.processPage = this.processListPagination.current - 1;
+        const { maxItems, skipCount } = pagination;
+        this.processPage = this.currentPage(skipCount, maxItems);
+        this.processPagination.maxItems = maxItems;
+        this.processPagination.skipCount = skipCount;
     }
 
     currentPage(skipCount: number, maxItems: number): number {

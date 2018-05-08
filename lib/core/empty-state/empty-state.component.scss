@@ -1,0 +1,26 @@
+.adf-app-empty-state {
+    margin-top: 250px !important;
+}
+
+.adf-app-empty-state-title {
+    opacity: 0.54;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: -0.5px;
+}
+
+.adf-app-empty-state-message {
+    opacity: 0.54;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: -0.3px;
+    text-align: center;
+}
+
+.adf-app-empty-state-icon {
+    margin-right: 25px;
+    opacity: 0.54;
+    mat-icon {
+        font-size: 48px;
+    }
+}

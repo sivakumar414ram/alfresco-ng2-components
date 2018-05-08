@@ -34,6 +34,7 @@ export * from './form/index';
 export * from './sidenav-layout/index';
 export * from './comments/index';
 export * from './buttons-menu/index';
+export * from './empty-state/index';
 
 export * from './pipes/index';
 export * from './services/index';

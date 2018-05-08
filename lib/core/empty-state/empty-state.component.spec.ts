@@ -1,0 +1,66 @@
+/*!
+ * @license
+ * Copyright 2016 Alfresco Software, Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { EmptyStateComponent } from './empty-state.component';
+import { setupTestBed } from '../testing/setupTestBed';
+import { CoreTestingModule } from '../testing/core.testing.module';
+
+describe('EmptyStateComponent', () => {
+    let element: HTMLElement;
+    let component: EmptyStateComponent;
+    let fixture: ComponentFixture<EmptyStateComponent>;
+
+    setupTestBed({
+        imports: [CoreTestingModule]
+    });
+
+    beforeEach(() => {
+        fixture = TestBed.createComponent(EmptyStateComponent);
+        element = fixture.nativeElement;
+        component = fixture.componentInstance;
+    });
+
+    afterEach(() => {
+        fixture.destroy();
+    });
+
+    it('should create instance of EmptyStateComponent', () => {
+        expect(fixture.componentInstance instanceof EmptyStateComponent).toBe(true, 'should create EmptyStateComponent');
+    });
+
+    it('should display title', () => {
+        component.title = 'Fake-Title';
+        const title = element.querySelector('.adf-app-empty-state-title');
+        fixture.detectChanges();
+        expect(title.textContent).toBe('Fake-Title');
+    });
+
+    it('should display icon', () => {
+        component.icon = 'Fake-icon';
+        const title = element.querySelector('.adf-app-empty-state-icon');
+        fixture.detectChanges();
+        expect(title.textContent).toBe('Fake-icon');
+    });
+
+    it('should display message', () => {
+        component.message = 'Fake-Message';
+        const title = element.querySelector('.adf-app-empty-state-message');
+        fixture.detectChanges();
+        expect(title.textContent).toBe('Fake-Message');
+    });
+});

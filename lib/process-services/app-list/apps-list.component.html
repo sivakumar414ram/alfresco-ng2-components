@@ -1,10 +1,28 @@
 <div class="menu-container" *ngIf="!isEmpty()">
-    <mat-list *ngIf="isList()" class="adf-app-list">
+    <mat-list *ngIf="isDefault()" class="adf-app-list">
         <mat-list-item class="adf-app-list-item" (click)="selectApp(app)" (keyup.enter)="selectApp(app)" *ngFor="let app of appList" tabindex="0" role="button" title="{{app.name}}">
             <mat-icon matListIcon>touch_app</mat-icon>
             <span matLine>{{getAppName(app) | async}}</span>
         </mat-list-item>
     </mat-list>
+    <adf-datatable *ngIf="isList()" [data]="data" class="adf-app-list">
+            <data-columns>
+                <data-column key="name" title="Name"></data-column>
+                <data-column key="action">
+                    <ng-template let-entry="$implicit">
+                        <mat-menu #appMenu="matMenu">
+                            <button mat-menu-item *ngFor="let action of actions" (click)="performAction(entry.row.obj, action.key)">
+                                <mat-icon>{{action.icon}}</mat-icon>
+                                {{action.label | translate }}
+                            </button>
+                        </mat-menu>
+                        <button mat-icon-button [matMenuTriggerFor]="appMenu" (click)="setActions(entry.row.obj)">
+                            <mat-icon>more_vert</mat-icon>
+                        </button>
+                    </ng-template>
+                </data-column>
+            </data-columns>
+    </adf-datatable>
     <div fxLayout="row wrap" *ngIf="isGrid()" class="adf-app-listgrid">
         <div *ngFor="let app of appList"
             class="adf-app-listgrid-item"

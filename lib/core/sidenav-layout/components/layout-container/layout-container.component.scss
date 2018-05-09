@@ -5,6 +5,10 @@
     overflow: hidden;
 }
 
+:host ::ng-deep mat-sidenav-content {
+  margin-left:0px !important;
+}
+
 @mixin adf-layout-container-theme($theme) {
     $foreground: map-get($theme, foreground);
 
@@ -35,9 +39,7 @@
   }
 
 
-  mat-sidenav-content {
-    margin-left:0px !important;
-  }
+
 
   .mat-sidenav-content,
   .mat-drawer-transition .mat-drawer-content {

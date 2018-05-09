@@ -21,6 +21,7 @@ import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { AppDefinitionRepresentationModel } from '../task-list';
 import { IconModel } from './icon.model';
+import { ObjectDataTableAdapter } from '@alfresco/adf-core';
 
 @Component({
     selector: 'adf-apps',
@@ -29,6 +30,7 @@ import { IconModel } from './icon.model';
 })
 export class AppsListComponent implements OnInit, AfterContentInit {
 
+    public static LAYOUT_DEFAULT: string = 'DEFAULT';
     public static LAYOUT_LIST: string = 'LIST';
     public static LAYOUT_GRID: string = 'GRID';
     public static DEFAULT_TASKS_APP: string = 'tasks';
@@ -41,7 +43,7 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     emptyTemplate: EmptyListComponent;
 
     /** (**required**) Defines the layout of the apps. There are two possible
-     * values, "GRID" and "LIST".
+     * values, "DEFAULT", "GRID" and "LIST".
      */
     @Input()
     layoutType: string = AppsListComponent.LAYOUT_GRID;
@@ -68,13 +70,14 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     private iconsMDL: IconModel;
 
     loading: boolean = false;
-
+    data: any;
+    actions = [{ key: 'deploy', icon: 'new', label: 'DEPLOY' }];
     hasCustomEmptyListTemplate: boolean = false;
 
     constructor(
         private appsProcessService: AppsProcessService,
         private translationService: TranslationService) {
-            this.apps$ = new Observable<AppDefinitionRepresentationModel>(observer => this.appsObserver = observer).share();
+        this.apps$ = new Observable<AppDefinitionRepresentationModel>(observer => this.appsObserver = observer).share();
     }
 
     ngOnInit() {
@@ -84,6 +87,7 @@ export class AppsListComponent implements OnInit, AfterContentInit {
 
         this.apps$.subscribe((app: any) => {
             this.appList.push(app);
+            this.buildData();
         });
         this.iconsMDL = new IconModel();
         this.load();
@@ -116,6 +120,10 @@ export class AppsListComponent implements OnInit, AfterContentInit {
                 this.loading = false;
             }
         );
+    }
+
+    buildData() {
+        this.data = new ObjectDataTableAdapter(this.appList);
     }
 
     isDefaultApp(app) {
@@ -170,7 +178,8 @@ export class AppsListComponent implements OnInit, AfterContentInit {
      * Check if the value of the layoutType property is an allowed value
      */
     isValidType(): boolean {
-        if (this.layoutType && (this.layoutType === AppsListComponent.LAYOUT_LIST || this.layoutType === AppsListComponent.LAYOUT_GRID)) {
+        if (this.layoutType && (this.layoutType === AppsListComponent.LAYOUT_DEFAULT || this.layoutType === AppsListComponent.LAYOUT_GRID ||
+            this.layoutType === AppsListComponent.LAYOUT_LIST)) {
             return true;
         }
         return false;
@@ -186,6 +195,10 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     /**
      * Return true if the layout type is LIST
      */
+    isDefault(): boolean {
+        return this.layoutType === AppsListComponent.LAYOUT_DEFAULT;
+    }
+
     isList(): boolean {
         return this.layoutType === AppsListComponent.LAYOUT_LIST;
     }
@@ -213,4 +226,11 @@ export class AppsListComponent implements OnInit, AfterContentInit {
         return this.iconsMDL.mapGlyphiconToMaterialDesignIcons(app.icon);
     }
 
+    performAction(row: any, action: string): void {
+        // Emmiter goes here
+    }
+
+    setActions(row: any): void {
+        this.actions = [{ key: 'deploy', icon: 'new', label: 'DEPLOY' }];
+    }
 }

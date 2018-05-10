@@ -21,7 +21,8 @@ import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
 import { AppDefinitionRepresentationModel } from '../task-list';
 import { IconModel } from './icon.model';
-import { ObjectDataTableAdapter } from '@alfresco/adf-core';
+import { appsPresetsDefaultModel } from './apps-preset.model';
+import { AppConfigService, DataColumn, DataTableAdapter, DataColumnListComponent, ObjectDataColumn, ObjectDataTableAdapter } from '@alfresco/adf-core';
 
 @Component({
     selector: 'adf-apps',
@@ -42,6 +43,8 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     @ContentChild(EmptyListComponent)
     emptyTemplate: EmptyListComponent;
 
+    @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
+
     /** (**required**) Defines the layout of the apps. There are two possible
      * values, "DEFAULT", "GRID" and "LIST".
      */
@@ -51,6 +54,10 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     /** Provides a way to filter the apps to show. */
     @Input()
     filtersAppId: any[];
+
+    /** Name of a custom schema to fetch from `app.config.json`. */
+    @Input()
+    presetColumn: string;
 
     /** Emitted when an app entry is clicked. */
     @Output()
@@ -65,17 +72,18 @@ export class AppsListComponent implements OnInit, AfterContentInit {
 
     currentApp: AppDefinitionRepresentationModel;
 
-    appList: AppDefinitionRepresentationModel [] = [];
+    appList: AppDefinitionRepresentationModel[] = [];
+    data: DataTableAdapter;
+    layoutPresets = {};
 
     private iconsMDL: IconModel;
 
     loading: boolean = false;
-    data: any;
-    actions = [{ key: 'deploy', icon: 'new', label: 'DEPLOY' }];
     hasCustomEmptyListTemplate: boolean = false;
 
     constructor(
         private appsProcessService: AppsProcessService,
+        private appConfig: AppConfigService,
         private translationService: TranslationService) {
         this.apps$ = new Observable<AppDefinitionRepresentationModel>(observer => this.appsObserver = observer).share();
     }
@@ -87,13 +95,14 @@ export class AppsListComponent implements OnInit, AfterContentInit {
 
         this.apps$.subscribe((app: any) => {
             this.appList.push(app);
-            this.buildData();
+            this.setupSchemaForList();
         });
         this.iconsMDL = new IconModel();
         this.load();
     }
 
     ngAfterContentInit() {
+        this.loadLayoutPresets();
         if (this.emptyTemplate) {
             this.hasCustomEmptyListTemplate = true;
         }
@@ -120,10 +129,6 @@ export class AppsListComponent implements OnInit, AfterContentInit {
                 this.loading = false;
             }
         );
-    }
-
-    buildData() {
-        this.data = new ObjectDataTableAdapter(this.appList);
     }
 
     isDefaultApp(app) {
@@ -195,10 +200,6 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     /**
      * Return true if the layout type is LIST
      */
-    isDefault(): boolean {
-        return this.layoutType === AppsListComponent.LAYOUT_DEFAULT;
-    }
-
     isList(): boolean {
         return this.layoutType === AppsListComponent.LAYOUT_LIST;
     }
@@ -226,11 +227,43 @@ export class AppsListComponent implements OnInit, AfterContentInit {
         return this.iconsMDL.mapGlyphiconToMaterialDesignIcons(app.icon);
     }
 
-    performAction(row: any, action: string): void {
-        // Emmiter goes here
+    private loadLayoutPresets(): void {
+        const externalSettings = this.appConfig.get('adf-apps-list.presets', null);
+
+        if (externalSettings) {
+            this.layoutPresets = Object.assign({}, appsPresetsDefaultModel, externalSettings);
+        } else {
+            this.layoutPresets = appsPresetsDefaultModel;
+        }
     }
 
-    setActions(row: any): void {
-        this.actions = [{ key: 'deploy', icon: 'new', label: 'DEPLOY' }];
+    setupSchemaForList() {
+        let schema = this.getSchema();
+        this.data = new ObjectDataTableAdapter(this.appList, schema);
+    }
+
+    getSchema(): any {
+        let customSchemaColumns = [];
+        customSchemaColumns = this.getSchemaFromConfig(this.presetColumn).concat(this.getSchemaFromHtml());
+        if (customSchemaColumns.length === 0) {
+            customSchemaColumns = this.getDefaultLayoutPreset();
+        }
+        return customSchemaColumns;
+    }
+
+    getSchemaFromHtml(): any {
+        let schema = [];
+        if (this.columnList && this.columnList.columns && this.columnList.columns.length > 0) {
+            schema = this.columnList.columns.map(c => <DataColumn> c);
+        }
+        return schema;
+    }
+
+    private getSchemaFromConfig(name: string): DataColumn[] {
+        return name ? (this.layoutPresets[name]).map(col => new ObjectDataColumn(col)) : [];
+    }
+
+    private getDefaultLayoutPreset(): DataColumn[] {
+        return (this.layoutPresets['default']).map(col => new ObjectDataColumn(col));
     }
 }

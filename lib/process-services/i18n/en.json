@@ -13,6 +13,7 @@
   },
   "ADF_TASK_LIST": {
     "APPS": {
+      "NAME": "Name",
       "NONE": "No apps found",
       "TASK_APP_NAME": "Task App"
     },

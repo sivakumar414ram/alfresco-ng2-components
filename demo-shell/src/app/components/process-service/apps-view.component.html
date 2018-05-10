@@ -1,1 +1,19 @@
-<adf-apps [layoutType]="'LIST'" (appClick)="onAppClicked($event)"></adf-apps>
+<adf-apps [layoutType]="'LIST'" (appClick)="onAppClicked($event)">
+    <data-columns>
+        <data-column key="name" title="Name"></data-column>
+        <data-column key="deploymentId" title="deploymentId"></data-column>
+        <data-column key="action">
+            <ng-template let-entry="$implicit">
+                <mat-menu #appMenu="matMenu">
+                    <button mat-menu-item *ngFor="let action of actions" (click)="performAction(entry.row.obj, action.key)">
+                        <mat-icon>{{action.icon}}</mat-icon>
+                        {{action.label | translate }}
+                    </button>
+                </mat-menu>
+                <button mat-icon-button [matMenuTriggerFor]="appMenu" (click)="setActions(entry.row.obj)">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+            </ng-template>
+        </data-column>
+    </data-columns>
+</adf-apps>

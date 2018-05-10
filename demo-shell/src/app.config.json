@@ -482,6 +482,18 @@
             ]
         }
     },
+    "adf-apps-list": {
+        "presets": {
+            "default": [
+                {
+                    "key": "name",
+                    "type": "text",
+                    "title": "ADF_PROCESS_LIST.PROPERTIES.NAME",
+                    "sortable": true
+                }
+            ]
+        }
+    },
     "content-metadata": {
         "presets": {
             "default": {

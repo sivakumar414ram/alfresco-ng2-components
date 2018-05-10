@@ -25,6 +25,7 @@ import { AppDefinitionRepresentationModel } from '@alfresco/adf-process-services
 })
 export class AppsViewComponent {
 
+    actions = [{ key: 'deploy', icon: 'new', label: 'DEPLOY' }];
     constructor(private router: Router) {
     }
 
@@ -32,4 +33,12 @@ export class AppsViewComponent {
          this.router.navigate(['/activiti/apps', app.id || 0, 'tasks']);
      }
 
+
+    performAction(row: any, action: string): void {
+        // Emmiter goes here
+    }
+
+    setActions(row: any): void {
+        this.actions = [{ key: 'deploy', icon: 'new', label: 'DEPLOY' }];
+    }
 }

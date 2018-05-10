@@ -1,7 +1,13 @@
 <div class="menu-container" *ngIf="!isEmpty()">
-    <adf-datatable #dataTable *ngIf="isList()" class="adf-app-list"
-        [data]="data">
-    </adf-datatable>
+    <div class="adf-app-list" *ngIf="isList()">
+        <adf-datatable #dataTable
+            [data]="data"
+            [selectionMode]="selectionMode"
+            [multiselect]="multiselect"
+            (rowClick)="onRowClick($event)"
+            (row-keyup)="onRowKeyUp($event)">
+        </adf-datatable>
+    </div>
     <div fxLayout="row wrap" *ngIf="isGrid()" class="adf-app-listgrid">
         <div *ngFor="let app of appList"
             class="adf-app-listgrid-item"

@@ -22,7 +22,7 @@ import { Observer } from 'rxjs/Observer';
 import { AppDefinitionRepresentationModel } from '../task-list';
 import { IconModel } from './icon.model';
 import { appsPresetsDefaultModel } from './apps-preset.model';
-import { AppConfigService, DataColumn, DataTableAdapter, DataColumnListComponent, ObjectDataColumn, ObjectDataTableAdapter } from '@alfresco/adf-core';
+import { AppConfigService, DataRowEvent, DataColumn, DataTableAdapter, DataColumnListComponent, ObjectDataColumn, ObjectDataTableAdapter } from '@alfresco/adf-core';
 
 @Component({
     selector: 'adf-apps',
@@ -31,7 +31,6 @@ import { AppConfigService, DataColumn, DataTableAdapter, DataColumnListComponent
 })
 export class AppsListComponent implements OnInit, AfterContentInit {
 
-    public static LAYOUT_DEFAULT: string = 'DEFAULT';
     public static LAYOUT_LIST: string = 'LIST';
     public static LAYOUT_GRID: string = 'GRID';
     public static DEFAULT_TASKS_APP: string = 'tasks';
@@ -46,7 +45,7 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
 
     /** (**required**) Defines the layout of the apps. There are two possible
-     * values, "DEFAULT", "GRID" and "LIST".
+     * values, "GRID" and "LIST".
      */
     @Input()
     layoutType: string = AppsListComponent.LAYOUT_GRID;
@@ -59,9 +58,24 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     @Input()
     presetColumn: string;
 
+    /* Toggles multiple row selection, renders checkboxes at the beginning of each row */
+    @Input()
+    multiselect: boolean = false;
+
+    /* Row selection mode. Can be none, `single` or `multiple`. For `multiple` mode,
+     * you can use Cmd (macOS) or Ctrl (Win) modifier key to toggle selection for
+     * multiple rows.
+     */
+    @Input()
+    selectionMode: string = 'single'; // none|single|multiple
+
     /** Emitted when an app entry is clicked. */
     @Output()
     appClick: EventEmitter<AppDefinitionRepresentationModel> = new EventEmitter<AppDefinitionRepresentationModel>();
+
+    /** Emitted when a row in the app list is clicked. */
+    @Output()
+    rowClick: EventEmitter<any> = new EventEmitter<any>();
 
     /** Emitted when an error occurs. */
     @Output()
@@ -183,8 +197,7 @@ export class AppsListComponent implements OnInit, AfterContentInit {
      * Check if the value of the layoutType property is an allowed value
      */
     isValidType(): boolean {
-        if (this.layoutType && (this.layoutType === AppsListComponent.LAYOUT_DEFAULT || this.layoutType === AppsListComponent.LAYOUT_GRID ||
-            this.layoutType === AppsListComponent.LAYOUT_LIST)) {
+        if (this.layoutType && (this.layoutType === AppsListComponent.LAYOUT_GRID || this.layoutType === AppsListComponent.LAYOUT_LIST)) {
             return true;
         }
         return false;
@@ -225,6 +238,25 @@ export class AppsListComponent implements OnInit, AfterContentInit {
 
     getBackgroundIcon(app: AppDefinitionRepresentationModel): string {
         return this.iconsMDL.mapGlyphiconToMaterialDesignIcons(app.icon);
+    }
+
+    /**
+     * Emit the event rowClick passing the current task id when the row is clicked
+     * @param event
+     */
+    onRowClick(event: DataRowEvent) {
+        this.rowClick.emit();
+    }
+
+    /**
+     * Emit the event rowClick passing the current task id when pressed the Enter key on the selected row
+     * @param event
+     */
+    onRowKeyUp(event: CustomEvent) {
+        if (event.detail.keyboardEvent.key === 'Enter') {
+            event.preventDefault();
+            this.rowClick.emit();
+        }
     }
 
     private loadLayoutPresets(): void {

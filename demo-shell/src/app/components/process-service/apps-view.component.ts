@@ -25,7 +25,8 @@ import { AppDefinitionRepresentationModel } from '@alfresco/adf-process-services
 })
 export class AppsViewComponent {
 
-    actions = [{ key: 'deploy', icon: 'new', label: 'DEPLOY' }];
+    actions: any;
+    presetColoum = 'apps-list';
     constructor(private router: Router) {
     }
 

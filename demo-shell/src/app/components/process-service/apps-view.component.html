@@ -1,7 +1,6 @@
 <adf-apps [layoutType]="'LIST'" (appClick)="onAppClicked($event)">
     <data-columns>
         <data-column key="name" title="Name"></data-column>
-        <data-column key="deploymentId" title="deploymentId"></data-column>
         <data-column key="action">
             <ng-template let-entry="$implicit">
                 <mat-menu #appMenu="matMenu">

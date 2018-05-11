@@ -33,6 +33,7 @@
         "HOME": "Home",
         "CONTENT_SERVICES": "Content Services",
         "PROCESS_SERVICES": "Process Services",
+        "PROCESS_SERVICES_LIST": "Process Services List",
         "LOGIN": "Login",
         "CUSTOM_SOURCES": "Custom Sources",
         "DATATABLE": "Datatable",

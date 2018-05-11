@@ -15,24 +15,40 @@
  * limitations under the License.
  */
 
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs/Subscription';
 import { AppDefinitionRepresentationModel } from '@alfresco/adf-process-services';
 
 @Component({
     selector: 'app-process-list-view',
     templateUrl: './apps-view.component.html'
 })
-export class AppsViewComponent {
+export class AppsViewComponent implements OnDestroy {
 
-    actions: any;
+    layoutType = 'GRID';
     presetColoum = 'apps-list';
+    actions: any;
+    private routeSub: Subscription;
+
     constructor(private router: Router) {
+        this.routeSub = this.router.events.subscribe(event => {
+            if (event instanceof NavigationEnd) {
+                const parts = event.urlAfterRedirects.split('/');
+                if (parts.length > 2) {
+                    this.layoutType = parts[2].toUpperCase();
+                }
+            }
+        });
     }
 
-     onAppClicked(app: AppDefinitionRepresentationModel) {
-         this.router.navigate(['/activiti/apps', app.id || 0, 'tasks']);
-     }
+    ngOnDestroy() {
+        this.routeSub.unsubscribe();
+    }
+
+    onAppClicked(app: AppDefinitionRepresentationModel) {
+        this.router.navigate(['/activiti/apps', app.id || 0, 'tasks']);
+    }
 
 
     performAction(row: any): void {

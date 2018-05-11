@@ -1,7 +1,7 @@
-<adf-apps [layoutType]="'LIST'" (appClick)="onAppClicked($event)">
+<adf-apps [layoutType]="layoutType" (appClick)="onAppClicked($event)">
     <data-columns>
         <data-column key="name" title="Name"></data-column>
-        <data-column key="action">
+        <data-column key="action" title="Action">
             <ng-template let-entry="$implicit">
                 <mat-menu #appMenu="matMenu">
                     <button mat-menu-item *ngFor="let action of actions" (click)="performAction(entry.row.obj, action.key)">

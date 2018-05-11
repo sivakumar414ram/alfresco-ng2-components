@@ -22,7 +22,7 @@ import {
 
 import {
     ContentService, DataCellEvent, DataColumn, DataRowActionEvent, DataSorting, DataTableComponent,
-    DisplayMode, ObjectDataColumn, PaginatedComponent, AppConfigService, DataColumnListComponent,
+    DisplayMode, PaginatedComponent, AppConfigService, DataColumnSchemaAssembler, DataColumnListComponent,
     UserPreferencesService, PaginationModel
 } from '@alfresco/adf-core';
 
@@ -55,7 +55,7 @@ export enum PaginationStrategy {
     templateUrl: './document-list.component.html',
     encapsulation: ViewEncapsulation.None
 })
-export class DocumentListComponent implements OnInit, OnChanges, OnDestroy, AfterContentInit, PaginatedComponent, NavigableComponentInterface {
+export class DocumentListComponent extends DataColumnSchemaAssembler implements OnInit, OnChanges, OnDestroy, AfterContentInit, PaginatedComponent, NavigableComponentInterface {
 
     static SINGLE_CLICK_NAVIGATION: string = 'click';
     static DOUBLE_CLICK_NAVIGATION: string = 'dblclick';
@@ -230,7 +230,6 @@ export class DocumentListComponent implements OnInit, OnChanges, OnDestroy, Afte
     selection = new Array<MinimalNodeEntity>();
 
     private _pagination: BehaviorSubject<PaginationModel>;
-    private layoutPresets = {};
     private subscriptions: Subscription[] = [];
 
     constructor(private documentListService: DocumentListService,
@@ -240,6 +239,7 @@ export class DocumentListComponent implements OnInit, OnChanges, OnDestroy, Afte
                 private preferences: UserPreferencesService,
                 private customResourcesService: CustomResourcesService,
                 private contentService: ContentService) {
+        super();
     }
 
     getContextActions(node: MinimalNodeEntity) {
@@ -277,7 +277,7 @@ export class DocumentListComponent implements OnInit, OnChanges, OnDestroy, Afte
     }
 
     private getLayoutPreset(name: string = 'default'): DataColumn[] {
-        return (this.layoutPresets[name] || this.layoutPresets['default']).map(col => new ObjectDataColumn(col));
+        return this.getSchemaFromConfig(name);
     }
 
     get pagination(): BehaviorSubject<PaginationModel> {
@@ -363,7 +363,7 @@ export class DocumentListComponent implements OnInit, OnChanges, OnDestroy, Afte
         let schema: DataColumn[] = [];
 
         if (this.hasCustomLayout) {
-            schema = this.columnList.columns.map(c => <DataColumn> c);
+            schema = this.getSchemaFromHtml();
         }
 
         if (!this.data) {
@@ -730,16 +730,6 @@ export class DocumentListComponent implements OnInit, OnChanges, OnDestroy, Afte
         return canNavigateFolder;
     }
 
-    private loadLayoutPresets(): void {
-        const externalSettings = this.appConfig.get('document-list.presets', null);
-
-        if (externalSettings) {
-            this.layoutPresets = Object.assign({}, presetsDefaultModel, externalSettings);
-        } else {
-            this.layoutPresets = presetsDefaultModel;
-        }
-    }
-
     private onDataReady(nodePaging: NodePaging) {
         this.ready.emit(nodePaging);
 
@@ -795,4 +785,23 @@ export class DocumentListComponent implements OnInit, OnChanges, OnDestroy, Afte
 
     }
 
+    getAppConfigService(): AppConfigService {
+        return this.appConfig;
+    }
+
+    getPresetKey(): string {
+        return 'document-list.presets';
+    }
+
+    getColumnList(): DataColumnListComponent {
+        return this.columnList;
+    }
+
+    getPresetColoumn(): string {
+        throw new Error('Method not implemented');
+    }
+
+    getPresetsModel(): any {
+        return presetsDefaultModel;
+    }
 }

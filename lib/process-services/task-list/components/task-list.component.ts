@@ -16,12 +16,12 @@
  */
 
 import { DataRowEvent, DataTableAdapter,
-    ObjectDataRow, ObjectDataTableAdapter, DataColumnSchemaAssembler } from '@alfresco/adf-core';
+    ObjectDataRow, ObjectDataTableAdapter, DataColumnListComponent, DataColumnSchemaAssembler } from '@alfresco/adf-core';
 import {
     AppConfigService, PaginationComponent, PaginatedComponent,
     UserPreferencesService, UserPreferenceValues, PaginationModel } from '@alfresco/adf-core';
 import {
-    AfterContentInit, Component, EventEmitter,
+    AfterContentInit, ContentChild, Component, EventEmitter,
     Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 import { Observable } from 'rxjs/Observable';
@@ -39,6 +39,8 @@ import { TaskListService } from './../services/tasklist.service';
 export class TaskListComponent extends DataColumnSchemaAssembler implements OnChanges, AfterContentInit, PaginatedComponent {
 
     requestNode: TaskQueryRequestRepresentationModel;
+
+    @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
 
     /** The id of the app. */
     @Input()
@@ -97,6 +99,10 @@ export class TaskListComponent extends DataColumnSchemaAssembler implements OnCh
     @Input()
     multiselect: boolean = false;
 
+    /** Name of a custom schema to fetch from `app.config.json`. */
+    @Input()
+    presetColumn: string;
+
     /** Emitted when a task in the list is clicked */
     @Output()
     rowClick: EventEmitter<string> = new EventEmitter<string>();
@@ -138,7 +144,7 @@ export class TaskListComponent extends DataColumnSchemaAssembler implements OnCh
     taskListPresetKey = 'adf-task-list.presets';
 
     constructor(private taskListService: TaskListService,
-                private appConfig: AppConfigService,
+                private appConfigService: AppConfigService,
                 private userPreferences: UserPreferencesService) {
         super();
         this.userPreferences.select(UserPreferenceValues.PaginationSize).subscribe((pageSize) => {
@@ -153,7 +159,7 @@ export class TaskListComponent extends DataColumnSchemaAssembler implements OnCh
     }
 
     ngAfterContentInit() {
-        this.loadLayoutPresets(this.appConfig, taskPresetsDefaultModel, this.taskListPresetKey);
+        this.loadLayoutPresets();
         this.setupSchema();
         if (this.appId) {
             this.reload();
@@ -383,5 +389,25 @@ export class TaskListComponent extends DataColumnSchemaAssembler implements OnCh
 
     get supportedPageSizes(): number[] {
         return this.userPreferences.getDefaultPageSizes();
+    }
+
+    getAppConfigService(): AppConfigService {
+        return this.appConfigService;
+    }
+
+    getPresetKey(): string {
+        return this.taskListPresetKey;
+    }
+
+    getColumnList(): DataColumnListComponent {
+        return this.columnList;
+    }
+
+    getPresetColoumn(): string {
+        return this.presetColumn;
+    }
+
+    getPresetsModel() {
+        return taskPresetsDefaultModel;
     }
 }

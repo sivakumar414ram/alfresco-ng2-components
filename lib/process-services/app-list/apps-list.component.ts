@@ -22,7 +22,7 @@ import { Observer } from 'rxjs/Observer';
 import { AppDefinitionRepresentationModel } from '../task-list';
 import { IconModel } from './icon.model';
 import { appsPresetsDefaultModel } from './apps-preset.model';
-import { AppConfigService, DataRowEvent, DataTableAdapter, DataColumnSchemaAssembler, ObjectDataTableAdapter } from '@alfresco/adf-core';
+import { AppConfigService, DataRowEvent, DataTableAdapter, DataColumnListComponent, DataColumnSchemaAssembler, ObjectDataTableAdapter } from '@alfresco/adf-core';
 
 @Component({
     selector: 'adf-apps',
@@ -42,7 +42,7 @@ export class AppsListComponent extends DataColumnSchemaAssembler implements OnIn
     @ContentChild(EmptyListComponent)
     emptyTemplate: EmptyListComponent;
 
-    // @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
+    @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
 
     /** (**required**) Defines the layout of the apps. There are two possible
      * values, "GRID" and "LIST".
@@ -64,6 +64,10 @@ export class AppsListComponent extends DataColumnSchemaAssembler implements OnIn
      */
     @Input()
     selectionMode: string = 'single'; // none|single|multiple
+
+    /** Name of a custom schema to fetch from `app.config.json`. */
+    @Input()
+    presetColumn: string;
 
     /** Emitted when an app entry is clicked. */
     @Output()
@@ -93,7 +97,7 @@ export class AppsListComponent extends DataColumnSchemaAssembler implements OnIn
 
     constructor(
         private appsProcessService: AppsProcessService,
-        private appConfig: AppConfigService,
+        private appConfigService: AppConfigService,
         private translationService: TranslationService) {
         super();
         this.apps$ = new Observable<AppDefinitionRepresentationModel>(observer => this.appsObserver = observer).share();
@@ -113,7 +117,7 @@ export class AppsListComponent extends DataColumnSchemaAssembler implements OnIn
     }
 
     ngAfterContentInit() {
-        this.loadLayoutPresets(this.appConfig, appsPresetsDefaultModel, this.appListPresetKey);
+        this.loadLayoutPresets();
         if (this.emptyTemplate) {
             this.hasCustomEmptyListTemplate = true;
         }
@@ -259,5 +263,22 @@ export class AppsListComponent extends DataColumnSchemaAssembler implements OnIn
     setupSchemaForList() {
         let schema = this.getSchema();
         this.data = new ObjectDataTableAdapter(this.appList, schema);
+    }
+
+    getAppConfigService(): AppConfigService {
+        return this.appConfigService;
+    }
+
+    getPresetKey(): string {
+        return this.appListPresetKey;
+    }
+    getColumnList(): DataColumnListComponent {
+        return this.columnList;
+    }
+    getPresetColoumn(): string {
+        return this.presetColumn;
+    }
+    getPresetsModel() {
+        return appsPresetsDefaultModel;
     }
 }

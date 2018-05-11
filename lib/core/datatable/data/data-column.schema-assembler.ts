@@ -15,37 +15,39 @@
  * limitations under the License.
  */
 
-import { Input, ContentChild } from '@angular/core';
 import { AppConfigService } from '../../app-config/app-config.service';
 import { DataColumnListComponent } from '../../data-column/data-column-list.component';
 import { DataColumn } from './data-column.model';
 import { ObjectDataColumn } from './object-datacolumn.model';
 
-export class DataColumnSchemaAssembler {
-
-    @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
-
-    @Input()
-    presetColumn: string;
-
-    /** The ID of the folder node to display or a reserved string alias for special sources */
-    @Input()
-    currentFolderId: string = null;
+export abstract class DataColumnSchemaAssembler {
 
     layoutPresets = {};
 
-    loadLayoutPresets(appConfigService: AppConfigService, presetsModel: any, presetKey: string): void {
-        const externalSettings = appConfigService.get(presetKey, null);
+    constructor() {}
+
+    abstract getAppConfigService(): AppConfigService;
+
+    abstract getPresetKey(): string;
+
+    abstract getColumnList(): DataColumnListComponent;
+
+    abstract getPresetColoumn(): string;
+
+    abstract getPresetsModel(): any;
+
+    loadLayoutPresets(): void {
+        const externalSettings = this.getAppConfigService().get(this.getPresetKey(), null);
         if (externalSettings) {
-            this.layoutPresets = Object.assign({}, presetsModel, externalSettings);
+            this.layoutPresets = Object.assign({}, this.getPresetsModel(), externalSettings);
         } else {
-            this.layoutPresets = presetsModel;
+            this.layoutPresets = this.getPresetsModel();
         }
     }
 
     getSchema(): any {
         let customSchemaColumns = [];
-        customSchemaColumns = this.getSchemaFromConfig(this.currentFolderId).concat(this.getSchemaFromHtml());
+        customSchemaColumns = this.getSchemaFromConfig(this.getPresetColoumn()).concat(this.getSchemaFromHtml());
         if (customSchemaColumns.length === 0) {
             customSchemaColumns = this.getDefaultLayoutPreset();
         }
@@ -54,8 +56,8 @@ export class DataColumnSchemaAssembler {
 
     getSchemaFromHtml(): any {
         let schema = [];
-        if (this.columnList && this.columnList.columns && this.columnList.columns.length > 0) {
-            schema = this.columnList.columns.map(c => <DataColumn> c);
+        if (this.getColumnList() && this.getColumnList().columns && this.getColumnList().columns.length > 0) {
+            schema = this.getColumnList().columns.map(c => <DataColumn> c);
         }
         return schema;
     }

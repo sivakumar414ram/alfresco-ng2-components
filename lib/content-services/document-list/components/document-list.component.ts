@@ -16,14 +16,14 @@
  */
 
 import {
-    AfterContentInit, Component, ElementRef, EventEmitter, HostListener, Input, NgZone,
+    AfterContentInit, Component, ContentChild, ElementRef, EventEmitter, HostListener, Input, NgZone,
     OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild, ViewEncapsulation
 } from '@angular/core';
 
 import {
-    ContentService, DataCellEvent, DataRowActionEvent, DataSorting, DataTableComponent,
-    DisplayMode, PaginatedComponent, AppConfigService,
-    UserPreferencesService, PaginationModel, DataColumnSchemaAssembler
+    ContentService, DataCellEvent, DataColumn, DataRowActionEvent, DataSorting, DataTableComponent,
+    DisplayMode, ObjectDataColumn, PaginatedComponent, AppConfigService, DataColumnListComponent,
+    UserPreferencesService, PaginationModel
 } from '@alfresco/adf-core';
 
 import { MinimalNodeEntity, MinimalNodeEntryEntity, NodePaging } from 'alfresco-js-api';
@@ -55,11 +55,15 @@ export enum PaginationStrategy {
     templateUrl: './document-list.component.html',
     encapsulation: ViewEncapsulation.None
 })
-export class DocumentListComponent extends DataColumnSchemaAssembler implements OnInit, OnChanges, OnDestroy, AfterContentInit, PaginatedComponent, NavigableComponentInterface {
+export class DocumentListComponent implements OnInit, OnChanges, OnDestroy, AfterContentInit, PaginatedComponent, NavigableComponentInterface {
 
     static SINGLE_CLICK_NAVIGATION: string = 'click';
     static DOUBLE_CLICK_NAVIGATION: string = 'dblclick';
     static DEFAULT_PAGE_SIZE: number = 20;
+
+    @ContentChild(DataColumnListComponent)
+    columnList: DataColumnListComponent;
+
     /** Include additional information about the node in the server request.for example: association, isLink, isLocked and others. */
     @Input()
     includeFields: string[];
@@ -160,6 +164,10 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
     @Input()
     imageResolver: any | null = null;
 
+    /** The ID of the folder node to display or a reserved string alias for special sources */
+    @Input()
+    currentFolderId: string = null;
+
     /** @deprecated 2.3.0 use currentFolderId or node */
     /** Currently displayed folder node */
     @Input()
@@ -222,9 +230,8 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
     selection = new Array<MinimalNodeEntity>();
 
     private _pagination: BehaviorSubject<PaginationModel>;
-    // private layoutPresets = {};
+    private layoutPresets = {};
     private subscriptions: Subscription[] = [];
-    documentListPresetKey = 'document-list.presets';
 
     constructor(private documentListService: DocumentListService,
                 private ngZone: NgZone,
@@ -233,7 +240,6 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
                 private preferences: UserPreferencesService,
                 private customResourcesService: CustomResourcesService,
                 private contentService: ContentService) {
-        super();
     }
 
     getContextActions(node: MinimalNodeEntity) {
@@ -270,9 +276,9 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
         return defaultSorting;
     }
 
-    // private getLayoutPreset(name: string = 'default'): DataColumn[] {
-    //     return (this.layoutPresets[name] || this.layoutPresets['default']).map(col => new ObjectDataColumn(col));
-    // }
+    private getLayoutPreset(name: string = 'default'): DataColumn[] {
+        return (this.layoutPresets[name] || this.layoutPresets['default']).map(col => new ObjectDataColumn(col));
+    }
 
     get pagination(): BehaviorSubject<PaginationModel> {
         let maxItems = this.preferences.paginationSize;
@@ -322,6 +328,7 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
     }
 
     ngOnInit() {
+        this.loadLayoutPresets();
         this.data = new ShareDataTableAdapter(this.documentListService, null, this.getDefaultSorting());
         this.data.thumbnails = this.thumbnails;
         this.data.permissionsStyle = this.permissionsStyle;
@@ -342,12 +349,22 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
     }
 
     ngAfterContentInit() {
-        this.loadLayoutPresets(this.appConfig, presetsDefaultModel, this.documentListPresetKey);
+        if (this.columnList) {
+            this.subscriptions.push(
+                this.columnList.columns.changes.subscribe(() => {
+                    this.setTableSchema();
+                })
+            );
+        }
         this.setTableSchema();
     }
 
     private setTableSchema() {
-        let schema = this.getSchema();
+        let schema: DataColumn[] = [];
+
+        if (this.hasCustomLayout) {
+            schema = this.columnList.columns.map(c => <DataColumn> c);
+        }
 
         if (!this.data) {
             this.data = new ShareDataTableAdapter(this.documentListService, schema, this.getDefaultSorting());
@@ -357,8 +374,7 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
 
         let columns = this.data.getColumns();
         if (!columns || columns.length === 0) {
-            this.data.setColumns(schema);
-            // this.setupDefaultColumns(this.currentFolderId);
+            this.setupDefaultColumns(this.currentFolderId);
         }
     }
 
@@ -576,7 +592,7 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
      */
     setupDefaultColumns(preset: string = 'default'): void {
         if (this.data) {
-            const columns = this.getSchemaFromConfig(preset);
+            const columns = this.getLayoutPreset(preset);
             this.data.setColumns(columns);
         }
     }
@@ -714,15 +730,15 @@ export class DocumentListComponent extends DataColumnSchemaAssembler implements 
         return canNavigateFolder;
     }
 
-    // private loadLayoutPresets(): void {
-    //     const externalSettings = this.appConfig.get('document-list.presets', null);
+    private loadLayoutPresets(): void {
+        const externalSettings = this.appConfig.get('document-list.presets', null);
 
-    //     if (externalSettings) {
-    //         this.layoutPresets = Object.assign({}, presetsDefaultModel, externalSettings);
-    //     } else {
-    //         this.layoutPresets = presetsDefaultModel;
-    //     }
-    // }
+        if (externalSettings) {
+            this.layoutPresets = Object.assign({}, presetsDefaultModel, externalSettings);
+        } else {
+            this.layoutPresets = presetsDefaultModel;
+        }
+    }
 
     private onDataReady(nodePaging: NodePaging) {
         this.ready.emit(nodePaging);

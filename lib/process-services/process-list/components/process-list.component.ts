@@ -22,7 +22,8 @@ import {
     DataTableAdapter,
     ObjectDataRow,
     ObjectDataTableAdapter,
-    DataColumnSchemaAssembler
+    DataColumnSchemaAssembler,
+    DataColumnListComponent
 } from '@alfresco/adf-core';
 import {
     AppConfigService,
@@ -35,6 +36,7 @@ import { DatePipe } from '@angular/common';
 import {
     AfterContentInit,
     Component,
+    ContentChild,
     EventEmitter,
     Input,
     OnChanges,
@@ -56,6 +58,8 @@ import { ProcessListModel } from '../models/process-list.model';
 export class ProcessInstanceListComponent extends DataColumnSchemaAssembler implements OnChanges, AfterContentInit, PaginatedComponent {
 
     @ViewChild('dataTable') dataTable: DataTableComponent;
+
+    @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
 
     /** The id of the app. */
     @Input()
@@ -106,6 +110,10 @@ export class ProcessInstanceListComponent extends DataColumnSchemaAssembler impl
     @Input()
     selectFirstRow: boolean = true;
 
+     /** Name of a custom schema to fetch from `app.config.json`. */
+    @Input()
+    presetColumn: string;
+
     /** Emitted when a row in the process list is clicked. */
     @Output()
     rowClick: EventEmitter<string> = new EventEmitter<string>();
@@ -121,14 +129,13 @@ export class ProcessInstanceListComponent extends DataColumnSchemaAssembler impl
     requestNode: ProcessFilterParamRepresentationModel;
     currentInstanceId: string;
     isLoading: boolean = true;
-    layoutPresets = {};
     processListPresetKey = 'adf-process-list.presets';
 
     pagination: BehaviorSubject<PaginationModel>;
 
     constructor(private processService: ProcessService,
                 private userPreferences: UserPreferencesService,
-                private appConfig: AppConfigService) {
+                private appConfigService: AppConfigService) {
         super();
         this.size = this.userPreferences.paginationSize;
 
@@ -140,7 +147,7 @@ export class ProcessInstanceListComponent extends DataColumnSchemaAssembler impl
     }
 
     ngAfterContentInit() {
-        this.loadLayoutPresets(this.appConfig, processPresetsDefaultModel, this.processListPresetKey);
+        this.loadLayoutPresets();
         this.setupSchema();
 
         if (this.appId) {
@@ -376,5 +383,25 @@ export class ProcessInstanceListComponent extends DataColumnSchemaAssembler impl
 
     get supportedPageSizes(): number[] {
         return this.userPreferences.getDefaultPageSizes();
+    }
+
+    getAppConfigService(): AppConfigService {
+        return this.appConfigService;
+    }
+
+    getPresetKey(): string {
+        return this.processListPresetKey;
+    }
+
+    getColumnList(): DataColumnListComponent {
+        return this.columnList;
+    }
+
+    getPresetColoumn(): string {
+        return this.presetColumn;
+    }
+
+    getPresetsModel() {
+        return processPresetsDefaultModel;
     }
 }

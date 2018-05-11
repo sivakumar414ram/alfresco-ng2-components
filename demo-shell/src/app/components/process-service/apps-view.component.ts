@@ -35,11 +35,11 @@ export class AppsViewComponent {
      }
 
 
-    performAction(row: any, action: string): void {
-        // Emmiter goes here
+    performAction(row: any): void {
+        this.router.navigate(['/activiti/apps', row.id || 0, 'tasks']);
     }
 
     setActions(row: any): void {
-        this.actions = [{ key: 'deploy', icon: 'new', label: 'DEPLOY' }];
+        this.actions = [{ key: 'tasks', icon: 'assignment', label: 'View Task' }];
     }
 }

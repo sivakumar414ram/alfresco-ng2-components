@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import { DataColumn, DataRowEvent, DataTableAdapter, ObjectDataColumn,
-    ObjectDataRow, ObjectDataTableAdapter } from '@alfresco/adf-core';
+import { DataRowEvent, DataTableAdapter,
+    ObjectDataRow, ObjectDataTableAdapter, DataColumnSchemaAssembler } from '@alfresco/adf-core';
 import {
-    AppConfigService, DataColumnListComponent, PaginationComponent, PaginatedComponent,
+    AppConfigService, PaginationComponent, PaginatedComponent,
     UserPreferencesService, UserPreferenceValues, PaginationModel } from '@alfresco/adf-core';
 import {
-    AfterContentInit, Component, ContentChild, EventEmitter,
+    AfterContentInit, Component, EventEmitter,
     Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 import { Observable } from 'rxjs/Observable';
@@ -36,11 +36,9 @@ import { TaskListService } from './../services/tasklist.service';
     templateUrl: './task-list.component.html',
     styleUrls: ['./task-list.component.css']
 })
-export class TaskListComponent implements OnChanges, AfterContentInit, PaginatedComponent {
+export class TaskListComponent extends DataColumnSchemaAssembler implements OnChanges, AfterContentInit, PaginatedComponent {
 
     requestNode: TaskQueryRequestRepresentationModel;
-
-    @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
 
     /** The id of the app. */
     @Input()
@@ -95,10 +93,6 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
     @Input()
     selectionMode: string = 'single'; // none|single|multiple
 
-    /** Custom preset column schema in JSON format. */
-    @Input()
-    presetColumn: string;
-
     /** Toggles multiple row selection, renders checkboxes at the beginning of each row */
     @Input()
     multiselect: boolean = false;
@@ -121,7 +115,6 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
 
     currentInstanceId: string;
     selectedInstances: any[];
-    layoutPresets = {};
     pagination: BehaviorSubject<PaginationModel>;
 
     /** The page number of the tasks to fetch. */
@@ -142,11 +135,12 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
      * @memberOf TaskListComponent
      */
     hasCustomDataSource: boolean = false;
+    taskListPresetKey = 'adf-task-list.presets';
 
     constructor(private taskListService: TaskListService,
                 private appConfig: AppConfigService,
                 private userPreferences: UserPreferencesService) {
-
+        super();
         this.userPreferences.select(UserPreferenceValues.PaginationSize).subscribe((pageSize) => {
             this.size = pageSize;
         });
@@ -159,7 +153,7 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
     }
 
     ngAfterContentInit() {
-        this.loadLayoutPresets();
+        this.loadLayoutPresets(this.appConfig, taskPresetsDefaultModel, this.taskListPresetKey);
         this.setupSchema();
         if (this.appId) {
             this.reload();
@@ -372,41 +366,6 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
             start: 0
         };
         return new TaskQueryRequestRepresentationModel(requestNode);
-    }
-
-    private loadLayoutPresets(): void {
-        const externalSettings = this.appConfig.get('adf-task-list.presets', null);
-
-        if (externalSettings) {
-            this.layoutPresets = Object.assign({}, taskPresetsDefaultModel, externalSettings);
-        } else {
-            this.layoutPresets = taskPresetsDefaultModel;
-        }
-    }
-
-    getSchema(): any {
-        let customSchemaColumns = [];
-        customSchemaColumns = this.getSchemaFromConfig(this.presetColumn).concat(this.getSchemaFromHtml());
-        if (customSchemaColumns.length === 0) {
-            customSchemaColumns = this.getDefaultLayoutPreset();
-        }
-        return customSchemaColumns;
-    }
-
-    getSchemaFromHtml(): any {
-        let schema = [];
-        if (this.columnList && this.columnList.columns && this.columnList.columns.length > 0) {
-            schema = this.columnList.columns.map(c => <DataColumn> c);
-        }
-        return schema;
-    }
-
-    private getSchemaFromConfig(name: string): DataColumn[] {
-        return name ? (this.layoutPresets[name]).map(col => new ObjectDataColumn(col)) : [];
-    }
-
-    private getDefaultLayoutPreset(): DataColumn[] {
-        return (this.layoutPresets['default']).map(col => new ObjectDataColumn(col));
     }
 
     updatePagination(params: PaginationModel) {

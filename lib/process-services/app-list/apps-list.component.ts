@@ -22,14 +22,14 @@ import { Observer } from 'rxjs/Observer';
 import { AppDefinitionRepresentationModel } from '../task-list';
 import { IconModel } from './icon.model';
 import { appsPresetsDefaultModel } from './apps-preset.model';
-import { AppConfigService, DataRowEvent, DataColumn, DataTableAdapter, DataColumnListComponent, ObjectDataColumn, ObjectDataTableAdapter } from '@alfresco/adf-core';
+import { AppConfigService, DataRowEvent, DataTableAdapter, DataColumnSchemaAssembler, ObjectDataTableAdapter } from '@alfresco/adf-core';
 
 @Component({
     selector: 'adf-apps',
     templateUrl: 'apps-list.component.html',
     styleUrls: ['./apps-list.component.scss']
 })
-export class AppsListComponent implements OnInit, AfterContentInit {
+export class AppsListComponent extends DataColumnSchemaAssembler implements OnInit, AfterContentInit {
 
     public static LAYOUT_LIST: string = 'LIST';
     public static LAYOUT_GRID: string = 'GRID';
@@ -42,7 +42,7 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     @ContentChild(EmptyListComponent)
     emptyTemplate: EmptyListComponent;
 
-    @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
+    // @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
 
     /** (**required**) Defines the layout of the apps. There are two possible
      * values, "GRID" and "LIST".
@@ -53,10 +53,6 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     /** Provides a way to filter the apps to show. */
     @Input()
     filtersAppId: any[];
-
-    /** Name of a custom schema to fetch from `app.config.json`. */
-    @Input()
-    presetColumn: string;
 
     /* Toggles multiple row selection, renders checkboxes at the beginning of each row */
     @Input()
@@ -88,17 +84,18 @@ export class AppsListComponent implements OnInit, AfterContentInit {
 
     appList: AppDefinitionRepresentationModel[] = [];
     data: DataTableAdapter;
-    layoutPresets = {};
 
     private iconsMDL: IconModel;
 
     loading: boolean = false;
     hasCustomEmptyListTemplate: boolean = false;
+    appListPresetKey = 'adf-apps-list.presets';
 
     constructor(
         private appsProcessService: AppsProcessService,
         private appConfig: AppConfigService,
         private translationService: TranslationService) {
+        super();
         this.apps$ = new Observable<AppDefinitionRepresentationModel>(observer => this.appsObserver = observer).share();
     }
 
@@ -116,7 +113,7 @@ export class AppsListComponent implements OnInit, AfterContentInit {
     }
 
     ngAfterContentInit() {
-        this.loadLayoutPresets();
+        this.loadLayoutPresets(this.appConfig, appsPresetsDefaultModel, this.appListPresetKey);
         if (this.emptyTemplate) {
             this.hasCustomEmptyListTemplate = true;
         }
@@ -259,43 +256,8 @@ export class AppsListComponent implements OnInit, AfterContentInit {
         }
     }
 
-    private loadLayoutPresets(): void {
-        const externalSettings = this.appConfig.get('adf-apps-list.presets', null);
-
-        if (externalSettings) {
-            this.layoutPresets = Object.assign({}, appsPresetsDefaultModel, externalSettings);
-        } else {
-            this.layoutPresets = appsPresetsDefaultModel;
-        }
-    }
-
     setupSchemaForList() {
         let schema = this.getSchema();
         this.data = new ObjectDataTableAdapter(this.appList, schema);
-    }
-
-    getSchema(): any {
-        let customSchemaColumns = [];
-        customSchemaColumns = this.getSchemaFromConfig(this.presetColumn).concat(this.getSchemaFromHtml());
-        if (customSchemaColumns.length === 0) {
-            customSchemaColumns = this.getDefaultLayoutPreset();
-        }
-        return customSchemaColumns;
-    }
-
-    getSchemaFromHtml(): any {
-        let schema = [];
-        if (this.columnList && this.columnList.columns && this.columnList.columns.length > 0) {
-            schema = this.columnList.columns.map(c => <DataColumn> c);
-        }
-        return schema;
-    }
-
-    private getSchemaFromConfig(name: string): DataColumn[] {
-        return name ? (this.layoutPresets[name]).map(col => new ObjectDataColumn(col)) : [];
-    }
-
-    private getDefaultLayoutPreset(): DataColumn[] {
-        return (this.layoutPresets['default']).map(col => new ObjectDataColumn(col));
     }
 }

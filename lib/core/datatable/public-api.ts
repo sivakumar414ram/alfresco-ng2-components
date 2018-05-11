@@ -25,6 +25,7 @@ export * from './data/data-sorting.model';
 export * from './data/object-datarow.model';
 export * from './data/object-datatable-adapter';
 export * from './data/object-datacolumn.model';
+export * from './data/data-column.schema-assembler';
 
 export * from './components/datatable/data-cell.event';
 export * from './components/datatable/data-row-action.event';

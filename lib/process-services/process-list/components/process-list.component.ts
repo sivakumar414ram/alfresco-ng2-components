@@ -16,18 +16,16 @@
  */
 
 import {
-    DataColumn,
     DataRowEvent,
     DataSorting,
     DataTableComponent,
     DataTableAdapter,
-    ObjectDataColumn,
     ObjectDataRow,
-    ObjectDataTableAdapter
+    ObjectDataTableAdapter,
+    DataColumnSchemaAssembler
 } from '@alfresco/adf-core';
 import {
     AppConfigService,
-    DataColumnListComponent,
     PaginatedComponent,
     PaginationComponent,
     PaginationModel,
@@ -37,7 +35,6 @@ import { DatePipe } from '@angular/common';
 import {
     AfterContentInit,
     Component,
-    ContentChild,
     EventEmitter,
     Input,
     OnChanges,
@@ -56,9 +53,7 @@ import { ProcessListModel } from '../models/process-list.model';
     styleUrls: ['./process-list.component.css'],
     templateUrl: './process-list.component.html'
 })
-export class ProcessInstanceListComponent implements OnChanges, AfterContentInit, PaginatedComponent {
-
-    @ContentChild(DataColumnListComponent) columnList: DataColumnListComponent;
+export class ProcessInstanceListComponent extends DataColumnSchemaAssembler implements OnChanges, AfterContentInit, PaginatedComponent {
 
     @ViewChild('dataTable') dataTable: DataTableComponent;
 
@@ -91,10 +86,6 @@ export class ProcessInstanceListComponent implements OnChanges, AfterContentInit
     /* The page number processes to fetch. */
     @Input()
     size: number = PaginationComponent.DEFAULT_PAGINATION.maxItems;
-
-    /** Name of a custom schema to fetch from `app.config.json`. */
-    @Input()
-    presetColumn: string;
 
     /** Data source to define the datatable. */
     @Input()
@@ -131,12 +122,14 @@ export class ProcessInstanceListComponent implements OnChanges, AfterContentInit
     currentInstanceId: string;
     isLoading: boolean = true;
     layoutPresets = {};
+    processListPresetKey = 'adf-process-list.presets';
 
     pagination: BehaviorSubject<PaginationModel>;
 
     constructor(private processService: ProcessService,
                 private userPreferences: UserPreferencesService,
                 private appConfig: AppConfigService) {
+        super();
         this.size = this.userPreferences.paginationSize;
 
         this.pagination = new BehaviorSubject<PaginationModel>(<PaginationModel> {
@@ -147,7 +140,7 @@ export class ProcessInstanceListComponent implements OnChanges, AfterContentInit
     }
 
     ngAfterContentInit() {
-        this.loadLayoutPresets();
+        this.loadLayoutPresets(this.appConfig, processPresetsDefaultModel, this.processListPresetKey);
         this.setupSchema();
 
         if (this.appId) {
@@ -366,41 +359,6 @@ export class ProcessInstanceListComponent implements OnChanges, AfterContentInit
             start: 0
         };
         return new ProcessFilterParamRepresentationModel(requestNode);
-    }
-
-    private loadLayoutPresets(): void {
-        const externalSettings = this.appConfig.get('adf-process-list.presets', null);
-
-        if (externalSettings) {
-            this.layoutPresets = Object.assign({}, processPresetsDefaultModel, externalSettings);
-        } else {
-            this.layoutPresets = processPresetsDefaultModel;
-        }
-    }
-
-    getSchema(): any {
-        let customSchemaColumns = [];
-        customSchemaColumns = this.getSchemaFromConfig(this.presetColumn).concat(this.getSchemaFromHtml());
-        if (customSchemaColumns.length === 0) {
-            customSchemaColumns = this.getDefaultLayoutPreset();
-        }
-        return customSchemaColumns;
-    }
-
-    getSchemaFromHtml(): any {
-        let schema = [];
-        if (this.columnList && this.columnList.columns && this.columnList.columns.length > 0) {
-            schema = this.columnList.columns.map(c => <DataColumn> c);
-        }
-        return schema;
-    }
-
-    private getSchemaFromConfig(name: string): DataColumn[] {
-        return name ? (this.layoutPresets[name]).map(col => new ObjectDataColumn(col)) : [];
-    }
-
-    private getDefaultLayoutPreset(): DataColumn[] {
-        return (this.layoutPresets['default']).map(col => new ObjectDataColumn(col));
     }
 
     updatePagination(params: PaginationModel) {

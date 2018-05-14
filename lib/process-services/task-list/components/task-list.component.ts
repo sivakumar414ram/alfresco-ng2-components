@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { DataColumn, DataRowEvent, DataTableAdapter, ObjectDataColumn,
-    ObjectDataRow, ObjectDataTableAdapter } from '@alfresco/adf-core';
+import { DataRowEvent, DataTableAdapter,
+    ObjectDataRow, ObjectDataTableAdapter, DataColumnSchemaAssembler } from '@alfresco/adf-core';
 import {
     AppConfigService, DataColumnListComponent, PaginationComponent, PaginatedComponent,
     UserPreferencesService, UserPreferenceValues, PaginationModel } from '@alfresco/adf-core';
@@ -36,7 +36,7 @@ import { TaskListService } from './../services/tasklist.service';
     templateUrl: './task-list.component.html',
     styleUrls: ['./task-list.component.css']
 })
-export class TaskListComponent implements OnChanges, AfterContentInit, PaginatedComponent {
+export class TaskListComponent extends DataColumnSchemaAssembler implements OnChanges, AfterContentInit, PaginatedComponent {
 
     requestNode: TaskQueryRequestRepresentationModel;
 
@@ -121,7 +121,7 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
 
     currentInstanceId: string;
     selectedInstances: any[];
-    layoutPresets = {};
+    taskListPresetKey = 'adf-task-list.presets';
     pagination: BehaviorSubject<PaginationModel>;
 
     /** The page number of the tasks to fetch. */
@@ -144,9 +144,9 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
     hasCustomDataSource: boolean = false;
 
     constructor(private taskListService: TaskListService,
-                private appConfig: AppConfigService,
+                private appConfigService: AppConfigService,
                 private userPreferences: UserPreferencesService) {
-
+        super();
         this.userPreferences.select(UserPreferenceValues.PaginationSize).subscribe((pageSize) => {
             this.size = pageSize;
         });
@@ -159,7 +159,7 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
     }
 
     ngAfterContentInit() {
-        this.loadLayoutPresets();
+        this.loadLayoutPresets(this.taskListPresetKey);
         this.setupSchema();
         if (this.appId) {
             this.reload();
@@ -374,39 +374,20 @@ export class TaskListComponent implements OnChanges, AfterContentInit, Paginated
         return new TaskQueryRequestRepresentationModel(requestNode);
     }
 
-    private loadLayoutPresets(): void {
-        const externalSettings = this.appConfig.get('adf-task-list.presets', null);
-
-        if (externalSettings) {
-            this.layoutPresets = Object.assign({}, taskPresetsDefaultModel, externalSettings);
-        } else {
-            this.layoutPresets = taskPresetsDefaultModel;
-        }
+    getAppConfigService(): AppConfigService {
+        return this.appConfigService;
     }
 
-    getSchema(): any {
-        let customSchemaColumns = [];
-        customSchemaColumns = this.getSchemaFromConfig(this.presetColumn).concat(this.getSchemaFromHtml());
-        if (customSchemaColumns.length === 0) {
-            customSchemaColumns = this.getDefaultLayoutPreset();
-        }
-        return customSchemaColumns;
+    getColumnList(): DataColumnListComponent {
+        return this.columnList;
     }
 
-    getSchemaFromHtml(): any {
-        let schema = [];
-        if (this.columnList && this.columnList.columns && this.columnList.columns.length > 0) {
-            schema = this.columnList.columns.map(c => <DataColumn> c);
-        }
-        return schema;
+    getPresetColoumn(): string {
+        return this.presetColumn;
     }
 
-    private getSchemaFromConfig(name: string): DataColumn[] {
-        return name ? (this.layoutPresets[name]).map(col => new ObjectDataColumn(col)) : [];
-    }
-
-    private getDefaultLayoutPreset(): DataColumn[] {
-        return (this.layoutPresets['default']).map(col => new ObjectDataColumn(col));
+    getPresetsModel() {
+        return taskPresetsDefaultModel;
     }
 
     updatePagination(params: PaginationModel) {

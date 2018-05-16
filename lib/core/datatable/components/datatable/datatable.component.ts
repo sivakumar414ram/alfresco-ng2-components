@@ -356,6 +356,9 @@ export class DataTableComponent implements AfterContentInit, OnChanges, DoCheck,
         if (this.data && this.columns && this.columns.length > 0) {
             this.data.setColumns(this.columns);
         }
+        if (this.data && this.columns && this.columns.length > 0) {
+            this.data.setColumns(this.columns);
+        }
     }
 
     private setTableSorting(sorting) {

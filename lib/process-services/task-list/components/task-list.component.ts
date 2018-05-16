@@ -20,7 +20,7 @@ import {
     AppConfigService, PaginationComponent, PaginatedComponent,
     UserPreferencesService, UserPreferenceValues, PaginationModel } from '@alfresco/adf-core';
 import {
-    AfterContentInit, Component, ContentChild, AfterViewInit, EventEmitter,
+    AfterContentInit, Component, ContentChild, EventEmitter,
     Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 
 import { Observable } from 'rxjs/Observable';

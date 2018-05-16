@@ -21,7 +21,7 @@ import {
     UserPreferencesService, UserPreferenceValues, PaginationModel } from '@alfresco/adf-core';
 import {
     AfterContentInit, Component, ContentChild, EventEmitter,
-    Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+    Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';

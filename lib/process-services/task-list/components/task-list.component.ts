@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import { DataTableComponent, DataRowEvent, DataTableSchema } from '@alfresco/adf-core';
+import { DataRowEvent, DataTableSchema } from '@alfresco/adf-core';
 import {
     AppConfigService, PaginationComponent, PaginatedComponent,
     UserPreferencesService, UserPreferenceValues, PaginationModel } from '@alfresco/adf-core';
 import {
     AfterContentInit, Component, EventEmitter,
-    Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+    Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -40,9 +40,6 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
     static PRESET_KEY = 'adf-task-list.presets';
 
     requestNode: TaskQueryRequestRepresentationModel;
-
-    @ViewChild(DataTableComponent)
-    datatable: DataTableComponent;
 
     /** The id of the app. */
     @Input()
@@ -158,8 +155,8 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
     }
 
     setCustomDataSource(rows: any[]): void {
-        if (this.datatable) {
-            this.datatable.data.setRows(rows);
+        if (rows) {
+            this.rows = rows;
             this.hasCustomDataSource = true;
         }
     }
@@ -198,8 +195,7 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
         this.isLoading = true;
         this.loadTasksByState().subscribe(
             (tasks) => {
-                let instancesRow = this.createDataRow(tasks.data);
-                this.renderInstances(instancesRow);
+                this.rows = this.optimizeNames(tasks.data);
                 this.selectTask(this.landingTaskId);
                 this.success.emit(tasks);
                 this.isLoading = false;
@@ -219,27 +215,6 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
         return this.requestNode.state === 'all'
             ? this.taskListService.findAllTasksWithoutState(this.requestNode)
             : this.taskListService.findTasksByState(this.requestNode);
-    }
-
-    /**
-     * Create an array of ObjectDataRow
-     * @param instances
-     */
-    private createDataRow(instances: any[]): any[] {
-        const instancesRows: any[] = [];
-        instances.forEach((row) => {
-            instancesRows.push(row);
-        });
-        return instancesRows;
-    }
-
-    /**
-     * Render the instances list
-     *
-     * @param instances
-     */
-    private renderInstances(instances: any[]) {
-        this.rows = this.optimizeNames(instances);
     }
 
     /**

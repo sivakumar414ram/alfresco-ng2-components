@@ -18,7 +18,8 @@
 import { DataRowEvent, DataTableAdapter, DataTableSchema, EmptyCustomContentDirective } from '@alfresco/adf-core';
 import {
     AppConfigService, PaginationComponent, PaginatedComponent,
-    UserPreferencesService, UserPreferenceValues, PaginationModel } from '@alfresco/adf-core';
+    UserPreferencesService, UserPreferenceValues, PaginationModel
+} from '@alfresco/adf-core';
 import {
     AfterContentInit, Component, ContentChild, EventEmitter,
     Input, OnChanges, Output, SimpleChanges } from '@angular/core';
@@ -218,6 +219,7 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
         this.loadTasksByState().subscribe(
             (tasks) => {
                 this.rows = this.optimizeNames(tasks.data);
+                this.selectTask(this.landingTaskId);
                 this.success.emit(tasks);
                 this.isLoading = false;
                 this.pagination.next({

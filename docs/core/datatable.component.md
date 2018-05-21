@@ -132,8 +132,10 @@ export class DataTableDemo {
 | data | `DataTableAdapter` |  | Data source for the table  |
 | display | `string` | `DisplayMode.List` | Selects the display mode of the table. Can be "list" or "gallery".  |
 | rows | `any[]` | `[]` | The rows that the datatable will show.  |
+| schemaColumns | `any[]` | `[]` | The columns that the datatable will show.  |
 | selectionMode | `string` | `'single'` | Row selection mode. Can be none, `single` or `multiple`. For `multiple` mode, you can use Cmd (macOS) or Ctrl (Win) modifier key to toggle selection for multiple rows. |
 | multiselect | `boolean` | `false` | Toggles multiple row selection, which renders checkboxes at the beginning of each row.  |
+| selectFirstRow | `boolean` | `true` | Toggles the first row selection.  |
 | actions | `boolean` | `false` | Toggles the data actions column.  |
 | actionsPosition | `string` | `'right'` | Position of the actions dropdown menu. Can be "left" or "right".  |
 | fallbackThumbnail | `string` |  | Fallback image for rows where the thumbnail is missing.  |

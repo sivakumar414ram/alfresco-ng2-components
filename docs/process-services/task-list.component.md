@@ -32,7 +32,7 @@ Renders a list containing all the tasks matched by the parameters specified.
 | sort | `string` |  | Define the sort order of the processes. Possible values are : `created-desc`, `created-asc`, `due-desc`, `due-asc` |
 | name | `string` |  | Name of the tasklist.  |
 | landingTaskId | `string` |  | Define which task id should be selected after reloading. If the task id doesn't exist or nothing is passed then the first task will be selected. |
-| data | `any` |  | Data source object that represents the number and the type of the columns that you want to show. |
+| schemaColumns | `any` |  | Represents the number and the type of the columns that you want to show. |
 | selectionMode | `string` | `'single'` | Row selection mode. Can be none, `single` or `multiple`. For `multiple` mode, you can use Cmd (macOS) or Ctrl (Win) modifier key to toggle selection for multiple rows. |
 | presetColumn | `string` |  | Custom preset column schema in JSON format.  |
 | multiselect | `boolean` | `false` | Toggles multiple row selection, renders checkboxes at the beginning of each row  |
@@ -55,17 +55,11 @@ renders details of any chosen instance.
 
 ### Setting the column schema
 
-You can pass a [DataTableAdapter instance](../core/datatable-adapter.interface.md)
-to set a column schema for the tasklist as shown below :
+You can pass schemaColumns to set a column for the tasklist as shown below :
 
 ```ts
-let data = new ObjectDataTableAdapter(
-    // Row data
-    [
-        { id: 1, name: 'Name 1' },
-        { id: 2, name: 'Name 2' }
-    ],
-    // Column schema
+// Column schema
+let schema = 
     [
         { 
             type: 'text', 
@@ -79,13 +73,12 @@ let data = new ObjectDataTableAdapter(
             title: 'Name', 
             sortable: true
         }
-    ]
-);
+    ];
 ```
 
 ```html
 <adf-tasklist
-    [data]="'data'">
+    [schemaColumns]="schema">
 </adf-tasklist>
 ```
 

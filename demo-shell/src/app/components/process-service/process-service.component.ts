@@ -251,6 +251,7 @@ export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit
         this.showProcessPagination = event.index === 1;
         this.paginationPageSize = this.preferenceService.paginationSize;
         if (this.processList) {
+            this.navigateToProcess();
             this.processList.reload();
         }
         if (this.taskList) {
@@ -377,6 +378,7 @@ export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit
     onFormCompleted(form): void {
         this.currentTaskId = null;
         if (this.taskListPagination) {
+            this.navigateToTask();
             this.taskPage = this.taskListPagination.current - 1;
         }
         if (!this.taskList) {
@@ -386,6 +388,10 @@ export class ProcessServiceComponent implements AfterViewInit, OnDestroy, OnInit
 
     navigateToProcess(): void {
         this.router.navigate([`/activiti/apps/${this.appId}/processes/`]);
+    }
+
+    navigateToTask(): void {
+        this.router.navigate(['/activiti/apps', this.appId || 0, 'tasks']);
     }
 
     onContentClick(content: any): void {

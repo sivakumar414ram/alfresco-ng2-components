@@ -137,6 +137,7 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
     size: number = PaginationComponent.DEFAULT_PAGINATION.maxItems;
 
     rows: any[] = [];
+    sorting: any[] = [];
     isLoading: boolean = true;
     sorting: any[] = ['created', 'desc'];
 
@@ -184,6 +185,7 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
 
     ngOnChanges(changes: SimpleChanges) {
         if (this.isPropertyChanged(changes)) {
+            this.sorting = this.getDataSort();
             this.reload();
         }
     }
@@ -194,11 +196,14 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
         let landingTaskId = changes['landingTaskId'];
         let page = changes['page'];
         let size = changes['size'];
+        let sort = changes['sort'];
         if (landingTaskId && landingTaskId.currentValue && this.isEqualToCurrentId(landingTaskId.currentValue)) {
             changed = false;
         } else if (page && page.currentValue !== page.previousValue) {
             changed = true;
         } else if (size && size.currentValue !== size.previousValue) {
+            changed = true;
+        } else if (sort && sort.currentValue !== sort.previousValue) {
             changed = true;
         }
 
@@ -363,5 +368,9 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
 
     get supportedPageSizes(): number[] {
         return this.userPreferences.getDefaultPageSizes();
+    }
+
+    getDataSort(): any[] {
+        return this.sort.split('-', 2);
     }
 }

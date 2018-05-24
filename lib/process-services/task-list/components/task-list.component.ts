@@ -184,8 +184,8 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        this.sorting = this.getDataSort();
         if (this.isPropertyChanged(changes)) {
-            this.sorting = this.getDataSort();
             this.reload();
         }
     }
@@ -196,14 +196,11 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
         let landingTaskId = changes['landingTaskId'];
         let page = changes['page'];
         let size = changes['size'];
-        let sort = changes['sort'];
         if (landingTaskId && landingTaskId.currentValue && this.isEqualToCurrentId(landingTaskId.currentValue)) {
             changed = false;
         } else if (page && page.currentValue !== page.previousValue) {
             changed = true;
         } else if (size && size.currentValue !== size.previousValue) {
-            changed = true;
-        } else if (sort && sort.currentValue !== sort.previousValue) {
             changed = true;
         }
 
@@ -371,6 +368,6 @@ export class TaskListComponent extends DataTableSchema implements OnChanges, Aft
     }
 
     getDataSort(): any[] {
-        return this.sort.split('-', 2);
+        return this.sort ? this.sort.split('-') : ['created', 'desc'];
     }
 }

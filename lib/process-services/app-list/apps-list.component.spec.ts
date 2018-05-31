@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-import { DebugElement, Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { DebugElement, ViewChild, Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { AppsProcessService, setupTestBed } from '@alfresco/adf-core';
+import { AppsProcessService, AppConfigService, setupTestBed, CoreModule } from '@alfresco/adf-core';
 import { Observable } from 'rxjs/Observable';
 
 import { defaultApp, deployedApps, nonDeployedApps } from '../mock/apps-list.mock';
 import { AppsListComponent } from './apps-list.component';
 import { ProcessTestingModule } from '../testing/process.testing.module';
+import { fakeCutomSchema } from '../mock';
 
 describe('AppsListComponent', () => {
 
@@ -31,6 +32,7 @@ describe('AppsListComponent', () => {
     let fixture: ComponentFixture<AppsListComponent>;
     let debugElement: DebugElement;
     let service: AppsProcessService;
+    let appConfig: AppConfigService;
     let getAppsSpy: jasmine.Spy;
 
     setupTestBed({
@@ -43,7 +45,49 @@ describe('AppsListComponent', () => {
         debugElement = fixture.debugElement;
 
         service = TestBed.get(AppsProcessService);
+        appConfig = TestBed.get(AppConfigService);
+        appConfig.config.bpmHost = 'http://localhost:9876/bpm';
         getAppsSpy = spyOn(service, 'getDeployedApplications').and.returnValue(Observable.of(deployedApps));
+        appConfig.config = Object.assign(appConfig.config, {
+            'adf-apps-list': {
+                'presets': {
+                    'fakeCutomSchema': [
+                        {
+                            'key': 'fakeName',
+                            'type': 'text',
+                            'title': 'ADF_TASK_LIST.PROPERTIES.FAKE',
+                            'sortable': true
+                        },
+                        {
+                            'key': 'fakeTaskName',
+                            'type': 'text',
+                            'title': 'ADF_TASK_LIST.PROPERTIES.TASK_FAKE',
+                            'sortable': true
+                        }
+                    ]
+                }
+            }
+        });
+    });
+
+    it('should use the default schemaColumn as default', () => {
+        component.ngAfterContentInit();
+        expect(component.columns).toBeDefined();
+        expect(component.columns.length).toEqual(1);
+    });
+
+    it('should use the custom schemaColumn from app.config.json', () => {
+        component.presetColumn = 'fakeCutomSchema';
+        component.ngAfterContentInit();
+        fixture.detectChanges();
+        expect(component.columns).toEqual(fakeCutomSchema);
+    });
+
+    it('should fetch custom schemaColumn when the input presetColumn is defined', () => {
+        component.presetColumn = 'fakeCutomSchema';
+        fixture.detectChanges();
+        expect(component.columns).toBeDefined();
+        expect(component.columns.length).toEqual(2);
     });
 
     it('should define layoutType with the default value', () => {
@@ -277,4 +321,49 @@ describe('Custom CustomEmptyAppListTemplateComponent', () => {
             expect(title[0].nativeElement.innerText).toBe('No Apps');
         });
     }));
+});
+
+@Component({
+    template: `
+    <adf-apps #appList>
+        <data-columns>
+            <data-column key="name" title="ADF_APPS_LIST.PROPERTIES.NAME" class="full-width name-column"></data-column>
+            <data-column key="deploymentId" title="ADF_APPS_LIST.PROPERTIES.ID"></data-column>
+            <data-column key="action" title="Action"></data-column>
+        </data-columns>
+    </adf-apps>`
+})
+
+class CustomAppsListComponent {
+
+    @ViewChild(AppsListComponent)
+    appList: AppsListComponent;
+}
+
+describe('CustomTaskListComponent', () => {
+    let fixture: ComponentFixture<CustomAppsListComponent>;
+    let component: CustomAppsListComponent;
+
+    setupTestBed({
+        imports: [CoreModule],
+        declarations: [AppsListComponent, CustomAppsListComponent]
+    });
+
+    beforeEach(() => {
+        fixture = TestBed.createComponent(CustomAppsListComponent);
+        fixture.detectChanges();
+        component = fixture.componentInstance;
+    });
+
+    it('should create instance of CustomAppsListComponent', () => {
+        expect(component instanceof CustomAppsListComponent).toBe(true, 'should create CustomAppsListComponent');
+    });
+
+    it('should fetch custom schemaColumn from html', () => {
+        fixture.detectChanges();
+        expect(component.appList.columnList).toBeDefined();
+        expect(component.appList.columns[0]['title']).toEqual('ADF_APPS_LIST.PROPERTIES.NAME');
+        expect(component.appList.columns[1]['title']).toEqual('ADF_APPS_LIST.PROPERTIES.ID');
+        expect(component.appList.columns.length).toEqual(3);
+    });
 });

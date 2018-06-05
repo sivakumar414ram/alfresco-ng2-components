@@ -201,6 +201,7 @@ export class DataTableComponent implements AfterContentInit, OnChanges, DoCheck,
                 this.initTable();
             } else {
                 this.data = changes['data'].currentValue;
+                this.setTableSorting(this.sorting);
                 this.setupData(this.data);
             }
             return;
@@ -219,10 +220,6 @@ export class DataTableComponent implements AfterContentInit, OnChanges, DoCheck,
         if (changes.selectionMode && !changes.selectionMode.isFirstChange()) {
             this.resetSelection();
             this.emitRowSelectionEvent('row-unselect', null);
-        }
-
-        if (this.isPropertyChanged(changes['sorting'])) {
-            this.setTableSorting(changes['sorting'].currentValue);
         }
     }
 
@@ -300,6 +297,7 @@ export class DataTableComponent implements AfterContentInit, OnChanges, DoCheck,
 
     private initTable() {
         this.data = new ObjectDataTableAdapter(this.rows, this.columns);
+        this.setTableSorting(this.sorting);
         this.setupData(this.data);
         this.rowMenuCache = {};
     }
@@ -329,6 +327,7 @@ export class DataTableComponent implements AfterContentInit, OnChanges, DoCheck,
                 this.resetSelection();
             }
             this.data.setRows(this.convertToRowsData(rows));
+            this.setTableSorting(this.sorting);
             this.selectFirst();
         }
     }
